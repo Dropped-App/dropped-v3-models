@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 import { ObjectIdSchema } from "./ObjectId";
+import {
+  ProductSharingDefaultProductStatusSchema,
+} from "./settings/productSharing";
+import { ProductSharingSyncFieldSchema } from "./ProductSharingApi";
 
 export const ProductSharingSyncJobCollection = "productSharingSyncJobs";
 
@@ -24,6 +28,11 @@ export const ProductSharingSyncJobItemSchema = z.object({
   groupId: z.string().min(1),
   status: ProductSharingSyncItemStatusSchema,
   receiverProductId: z.string().optional().nullable(),
+  selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(10),
+  statusOverride: ProductSharingDefaultProductStatusSchema,
+  taxEnabledOverride: z.boolean().optional().nullable(),
+  excludedVariantIds: z.array(z.string().min(1)).max(250),
+  excludedOptionValues: z.array(z.string().min(1)).max(250),
   error: z.string().optional().nullable(),
 });
 

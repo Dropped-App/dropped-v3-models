@@ -1,7 +1,36 @@
 import { z } from "zod";
 
-import { ProductSharingPriceModifierSchema, ProductSharingSettingsSchema } from "./settings/productSharing";
+import {
+  ProductSharingDefaultProductStatusSchema,
+  ProductSharingPriceModifierSchema,
+  ProductSharingSettingsSchema,
+} from "./settings/productSharing";
 import { parseJsonBody } from "./apiParsing";
+
+export const ProductSharingSyncFieldSchema = z.enum([
+  "title",
+  "descriptionHtml",
+  "vendor",
+  "productType",
+  "tags",
+  "status",
+  "seo",
+  "variants",
+  "metafields",
+  "media",
+]);
+export const ProductSharingBrowseStatusSchema = z.enum([
+  "NOT_IMPORTED",
+  "IMPORTED",
+  "UPDATE_AVAILABLE",
+  "ACCESS_REMOVED",
+]);
+
+const ProductSharingSenderProductIdRecordSchema = z.record(z.string(), z.string().min(1));
+const ProductSharingSenderProductArrayRecordSchema = z.record(
+  z.string(),
+  z.array(z.string().min(1)).max(250),
+);
 
 export const ProductSharingRefreshBodySchema = z.object({}).passthrough();
 
@@ -56,17 +85,34 @@ export const ProductSharingBlockSenderBodySchema = z.object({
 export const ProductSharingPreviewBodySchema = z.object({
   operation: z.enum(["IMPORT", "UPDATE"]),
   preferExistingMatch: z.boolean().optional().nullable(),
+  selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(10).optional().nullable(),
+  statusOverride: ProductSharingDefaultProductStatusSchema,
+  taxEnabledOverride: z.boolean().optional().nullable(),
   groupId: z.string().optional().nullable(),
   senderOrgId: z.string().optional().nullable(),
   vendor: z.string().max(120).optional().nullable(),
   productType: z.string().max(120).optional().nullable(),
   tag: z.string().max(120).optional().nullable(),
-  status: z.string().max(120).optional().nullable(),
+  status: ProductSharingBrowseStatusSchema.optional().nullable(),
+  updatedSinceLastImport: z.boolean().optional().nullable(),
   collectionId: z.string().max(250).optional().nullable(),
-  sort: z.enum(["title", "vendor", "status", "adjustedPrice"]).optional().nullable(),
+  sort: z
+    .enum([
+      "group",
+      "title",
+      "vendor",
+      "status",
+      "sourceUpdatedAt",
+      "importedAt",
+      "adjustedPrice",
+    ])
+    .optional()
+    .nullable(),
   direction: z.enum(["asc", "desc"]).optional().nullable(),
   senderProductIds: z.array(z.string().min(1)).min(1).max(200).optional().nullable(),
-  receiverProductOverrides: z.record(z.string(), z.string().min(1)).optional().nullable(),
+  receiverProductOverrides: ProductSharingSenderProductIdRecordSchema.optional().nullable(),
+  excludedVariantIdsByProduct: ProductSharingSenderProductArrayRecordSchema.optional().nullable(),
+  excludedOptionValuesByProduct: ProductSharingSenderProductArrayRecordSchema.optional().nullable(),
   selectAll: z.boolean().optional().nullable(),
   search: z.string().max(250).optional().nullable(),
 });
@@ -76,17 +122,34 @@ export const ProductSharingSyncBodySchema = z
     operation: z.enum(["IMPORT", "UPDATE"]),
     preferExistingMatch: z.boolean().optional().nullable(),
     createMissingMetafieldDefinitions: z.boolean().optional().nullable(),
+    selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(10).optional().nullable(),
+    statusOverride: ProductSharingDefaultProductStatusSchema,
+    taxEnabledOverride: z.boolean().optional().nullable(),
     groupId: z.string().optional().nullable(),
     senderOrgId: z.string().optional().nullable(),
     vendor: z.string().max(120).optional().nullable(),
     productType: z.string().max(120).optional().nullable(),
     tag: z.string().max(120).optional().nullable(),
-    status: z.string().max(120).optional().nullable(),
+    status: ProductSharingBrowseStatusSchema.optional().nullable(),
+    updatedSinceLastImport: z.boolean().optional().nullable(),
     collectionId: z.string().max(250).optional().nullable(),
-    sort: z.enum(["title", "vendor", "status", "adjustedPrice"]).optional().nullable(),
+    sort: z
+      .enum([
+        "group",
+        "title",
+        "vendor",
+        "status",
+        "sourceUpdatedAt",
+        "importedAt",
+        "adjustedPrice",
+      ])
+      .optional()
+      .nullable(),
     direction: z.enum(["asc", "desc"]).optional().nullable(),
     senderProductIds: z.array(z.string().min(1)).min(1).max(200).optional().nullable(),
-    receiverProductOverrides: z.record(z.string(), z.string().min(1)).optional().nullable(),
+    receiverProductOverrides: ProductSharingSenderProductIdRecordSchema.optional().nullable(),
+    excludedVariantIdsByProduct: ProductSharingSenderProductArrayRecordSchema.optional().nullable(),
+    excludedOptionValuesByProduct: ProductSharingSenderProductArrayRecordSchema.optional().nullable(),
     selectAll: z.boolean().optional().nullable(),
     search: z.string().max(250).optional().nullable(),
   })
@@ -100,10 +163,22 @@ export const ProductSharingBrowseQuerySchema = z.object({
   vendor: z.string().max(120).optional().nullable(),
   productType: z.string().max(120).optional().nullable(),
   tag: z.string().max(120).optional().nullable(),
-  status: z.string().max(120).optional().nullable(),
+  status: ProductSharingBrowseStatusSchema.optional().nullable(),
+  updatedSinceLastImport: z.coerce.boolean().optional().nullable(),
   collectionId: z.string().max(250).optional().nullable(),
   search: z.string().max(250).optional().nullable(),
-  sort: z.enum(["title", "vendor", "status", "adjustedPrice"]).optional().nullable(),
+  sort: z
+    .enum([
+      "group",
+      "title",
+      "vendor",
+      "status",
+      "sourceUpdatedAt",
+      "importedAt",
+      "adjustedPrice",
+    ])
+    .optional()
+    .nullable(),
   direction: z.enum(["asc", "desc"]).optional().nullable(),
   page: z.coerce.number().int().min(1).max(10000).optional().nullable(),
   pageSize: z.coerce.number().int().min(1).max(50).optional().nullable(),
