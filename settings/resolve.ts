@@ -10,6 +10,10 @@ import {
   type DealerFormFieldDefinition,
 } from "./dealerForms";
 import { type LanguageContent, type LanguageSettings } from "./language";
+import {
+  type ProductSharingMetafieldPromptSuppression,
+  type ProductSharingSettings,
+} from "./productSharing";
 import { type MapPinStyle, type ProviderSettings } from "./provider";
 import { type SearchBehaviourSettings, type SearchStartingArea } from "./searchBehaviour";
 
@@ -20,6 +24,7 @@ type ResolvableSettingsInput = {
   customFields?: CustomFieldsSettings | null;
   dealerForms?: DealerFormsSettings | null;
   language?: LanguageSettings | null;
+  productSharing?: ProductSharingSettings | null;
 } | null | undefined;
 
 const DEFAULT_STARTING_AREA: SearchStartingArea = {
@@ -85,6 +90,9 @@ const DEFAULT_DEALER_NOTIFICATION_SUBJECT = "Your submission has been received."
 const DEFAULT_DEALER_NOTIFICATION_BODY = "Hi {name},\n\nYour submission has been received. We will contact you once your submission has been accepted or if we have any questions.";
 const DEFAULT_DEALER_PUBLISHED_SUBJECT = "Your submission has been published";
 const DEFAULT_DEALER_PUBLISHED_BODY = "Hi {name},\n\nYour dealer submission has been published and your listing will appear on our stockists map shortly.";
+
+const DEFAULT_PRODUCT_SHARING_METAFIELD_PROMPT_SUPPRESSIONS: ProductSharingMetafieldPromptSuppression[] =
+  [];
 
 function resolveSearchBehaviourSettings(
   settings?: SearchBehaviourSettings | null,
@@ -300,6 +308,47 @@ function resolveLanguageSettings(
   };
 }
 
+function resolveProductSharingSettings(
+  settings?: ProductSharingSettings | null,
+): ProductSharingSettings {
+  return {
+    senderDefaults: {
+      shareActiveProductsOnly: settings?.senderDefaults?.shareActiveProductsOnly ?? true,
+    },
+    receiverDefaults: {
+      defaultImportProductStatus:
+        settings?.receiverDefaults?.defaultImportProductStatus ?? "DRAFT",
+      defaultUpdateProductStatus:
+        settings?.receiverDefaults?.defaultUpdateProductStatus ?? "KEEP_EXISTING",
+      taxEnabledByDefault: settings?.receiverDefaults?.taxEnabledByDefault ?? true,
+    },
+    pricing: {
+      receiverPriceModifier: settings?.pricing?.receiverPriceModifier
+        ? {
+            adjustmentType:
+              settings.pricing.receiverPriceModifier.adjustmentType ?? "PERCENTAGE",
+            amount: settings.pricing.receiverPriceModifier.amount ?? 0,
+          }
+        : null,
+      priceSourceRule: settings?.pricing?.priceSourceRule ?? "REGULAR",
+      roundingRule: settings?.pricing?.roundingRule
+        ? {
+            mode: settings.pricing.roundingRule.mode ?? "NONE",
+            increment: settings.pricing.roundingRule.increment ?? 0.01,
+          }
+        : null,
+    },
+    matching: {
+      matchBySku: settings?.matching?.matchBySku ?? false,
+      matchByHandle: settings?.matching?.matchByHandle ?? false,
+      matchByTitle: settings?.matching?.matchByTitle ?? false,
+    },
+    metafieldPromptSuppressions:
+      settings?.metafieldPromptSuppressions ??
+      DEFAULT_PRODUCT_SHARING_METAFIELD_PROMPT_SUPPRESSIONS,
+  };
+}
+
 export function resolveSettings(settings?: ResolvableSettingsInput): NonNullable<Settings> {
   return {
     searchBehaviour: resolveSearchBehaviourSettings(settings?.searchBehaviour),
@@ -308,5 +357,6 @@ export function resolveSettings(settings?: ResolvableSettingsInput): NonNullable
     customFields: resolveCustomFieldsSettings(settings?.customFields),
     dealerForms: resolveDealerFormsSettings(settings?.dealerForms),
     language: resolveLanguageSettings(settings?.language),
+    productSharing: resolveProductSharingSettings(settings?.productSharing),
   };
 }

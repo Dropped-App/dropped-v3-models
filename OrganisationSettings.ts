@@ -21,6 +21,10 @@ import {
 import {
   createSettingsConverter,
 } from "./settings/shared";
+import {
+  ProductSharingSettingsConverter,
+  ProductSharingSettingsSchema,
+} from "./settings/productSharing";
 import { resolveSettings } from "./settings/resolve";
 
 export const SettingsGroupsSchema = z.object({
@@ -41,6 +45,9 @@ export const SettingsGroupsSchema = z.object({
   ),
   searchBehaviour: SearchBehaviourSettingsSchema.optional().nullable().describe(
     "Search and map interaction behavior including starting position, clustering, geolocation, distances, and autocomplete constraints.",
+  ),
+  productSharing: ProductSharingSettingsSchema.optional().nullable().describe(
+    "Product sharing sender and receiver configuration defaults, matching behavior, pricing behavior, and metafield prompt suppressions.",
   ),
 }).describe(
   "Store locator settings groups derived from the plan documents. Each group maps to a dedicated settings panel and is stored against an organisation.",
@@ -63,6 +70,8 @@ export {
   LanguageSettingsSchema,
   ProviderSettingsConverter,
   ProviderSettingsSchema,
+  ProductSharingSettingsConverter,
+  ProductSharingSettingsSchema,
   resolveSettings,
   SearchBehaviourSettingsConverter,
   SearchBehaviourSettingsSchema,

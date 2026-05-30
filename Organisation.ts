@@ -75,6 +75,19 @@ export const OrganisationResult = z.object({
   storefrontSnapshotLeaseExpiresAt: z.date().nullable().optional(),
   storefrontSnapshotLeaseToken: z.string().optional().nullable(),
   storefrontSnapshotLastSyncedAt: z.date().nullable().optional(),
+  productSharingStoreKey: z.string().optional().nullable(),
+  productSharingProductSnapshotChecksum: z.string().optional().nullable(),
+  productSharingProductSnapshotDirtyAt: z.date().nullable().optional(),
+  productSharingProductSnapshotStartedAt: z.date().nullable().optional(),
+  productSharingProductSnapshotLeaseExpiresAt: z.date().nullable().optional(),
+  productSharingProductSnapshotLeaseToken: z.string().optional().nullable(),
+  productSharingProductSnapshotLastSyncedAt: z.date().nullable().optional(),
+  productSharingMetafieldDefinitionsChecksum: z.string().optional().nullable(),
+  productSharingMetafieldDefinitionsDirtyAt: z.date().nullable().optional(),
+  productSharingMetafieldDefinitionsStartedAt: z.date().nullable().optional(),
+  productSharingMetafieldDefinitionsLeaseExpiresAt: z.date().nullable().optional(),
+  productSharingMetafieldDefinitionsLeaseToken: z.string().optional().nullable(),
+  productSharingMetafieldDefinitionsLastSyncedAt: z.date().nullable().optional(),
   orgRebuildRequestedAt: z.date().nullable().optional(),
   orgRebuildStartedAt: z.date().nullable().optional(),
   orgRebuildLeaseExpiresAt: z.date().nullable().optional(),
@@ -141,6 +154,28 @@ export const OrganisationModelSchema = z.object({
   storefrontSnapshotLeaseExpiresAt: OrganisationResult.shape.storefrontSnapshotLeaseExpiresAt,
   storefrontSnapshotLeaseToken: OrganisationResult.shape.storefrontSnapshotLeaseToken,
   storefrontSnapshotLastSyncedAt: OrganisationResult.shape.storefrontSnapshotLastSyncedAt,
+  productSharingStoreKey: OrganisationResult.shape.productSharingStoreKey,
+  productSharingProductSnapshotChecksum: OrganisationResult.shape.productSharingProductSnapshotChecksum,
+  productSharingProductSnapshotDirtyAt: OrganisationResult.shape.productSharingProductSnapshotDirtyAt,
+  productSharingProductSnapshotStartedAt: OrganisationResult.shape.productSharingProductSnapshotStartedAt,
+  productSharingProductSnapshotLeaseExpiresAt:
+    OrganisationResult.shape.productSharingProductSnapshotLeaseExpiresAt,
+  productSharingProductSnapshotLeaseToken:
+    OrganisationResult.shape.productSharingProductSnapshotLeaseToken,
+  productSharingProductSnapshotLastSyncedAt:
+    OrganisationResult.shape.productSharingProductSnapshotLastSyncedAt,
+  productSharingMetafieldDefinitionsChecksum:
+    OrganisationResult.shape.productSharingMetafieldDefinitionsChecksum,
+  productSharingMetafieldDefinitionsDirtyAt:
+    OrganisationResult.shape.productSharingMetafieldDefinitionsDirtyAt,
+  productSharingMetafieldDefinitionsStartedAt:
+    OrganisationResult.shape.productSharingMetafieldDefinitionsStartedAt,
+  productSharingMetafieldDefinitionsLeaseExpiresAt:
+    OrganisationResult.shape.productSharingMetafieldDefinitionsLeaseExpiresAt,
+  productSharingMetafieldDefinitionsLeaseToken:
+    OrganisationResult.shape.productSharingMetafieldDefinitionsLeaseToken,
+  productSharingMetafieldDefinitionsLastSyncedAt:
+    OrganisationResult.shape.productSharingMetafieldDefinitionsLastSyncedAt,
   orgRebuildRequestedAt: OrganisationResult.shape.orgRebuildRequestedAt,
   orgRebuildStartedAt: OrganisationResult.shape.orgRebuildStartedAt,
   orgRebuildLeaseExpiresAt: OrganisationResult.shape.orgRebuildLeaseExpiresAt,
@@ -206,6 +241,41 @@ export const OrganisationModel = {
       storefrontSnapshotLastSyncedAt: entity.storefrontSnapshotLastSyncedAt
         ? new Date(entity.storefrontSnapshotLastSyncedAt)
         : null,
+      productSharingStoreKey: entity.productSharingStoreKey ?? null,
+      productSharingProductSnapshotChecksum: entity.productSharingProductSnapshotChecksum ?? null,
+      productSharingProductSnapshotDirtyAt: entity.productSharingProductSnapshotDirtyAt
+        ? new Date(entity.productSharingProductSnapshotDirtyAt)
+        : null,
+      productSharingProductSnapshotStartedAt: entity.productSharingProductSnapshotStartedAt
+        ? new Date(entity.productSharingProductSnapshotStartedAt)
+        : null,
+      productSharingProductSnapshotLeaseExpiresAt: entity.productSharingProductSnapshotLeaseExpiresAt
+        ? new Date(entity.productSharingProductSnapshotLeaseExpiresAt)
+        : null,
+      productSharingProductSnapshotLeaseToken:
+        entity.productSharingProductSnapshotLeaseToken ?? null,
+      productSharingProductSnapshotLastSyncedAt: entity.productSharingProductSnapshotLastSyncedAt
+        ? new Date(entity.productSharingProductSnapshotLastSyncedAt)
+        : null,
+      productSharingMetafieldDefinitionsChecksum:
+        entity.productSharingMetafieldDefinitionsChecksum ?? null,
+      productSharingMetafieldDefinitionsDirtyAt: entity.productSharingMetafieldDefinitionsDirtyAt
+        ? new Date(entity.productSharingMetafieldDefinitionsDirtyAt)
+        : null,
+      productSharingMetafieldDefinitionsStartedAt:
+        entity.productSharingMetafieldDefinitionsStartedAt
+          ? new Date(entity.productSharingMetafieldDefinitionsStartedAt)
+          : null,
+      productSharingMetafieldDefinitionsLeaseExpiresAt:
+        entity.productSharingMetafieldDefinitionsLeaseExpiresAt
+          ? new Date(entity.productSharingMetafieldDefinitionsLeaseExpiresAt)
+          : null,
+      productSharingMetafieldDefinitionsLeaseToken:
+        entity.productSharingMetafieldDefinitionsLeaseToken ?? null,
+      productSharingMetafieldDefinitionsLastSyncedAt:
+        entity.productSharingMetafieldDefinitionsLastSyncedAt
+          ? new Date(entity.productSharingMetafieldDefinitionsLastSyncedAt)
+          : null,
       orgRebuildRequestedAt: entity.orgRebuildRequestedAt
         ? new Date(entity.orgRebuildRequestedAt)
         : null,

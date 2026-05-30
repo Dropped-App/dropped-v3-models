@@ -2542,3 +2542,612 @@ Example:
   "overLimitAutoTrimmedAt": null
 }
 ```
+
+\---
+
+## Product Sharing
+
+All product-sharing admin endpoints use the standard authenticated admin flow.
+
+### Shared query parameters
+
+* `shop: string` (required)
+* standard Shopify HMAC params for verification
+
+### Sender Settings
+
+**Methods:** `GET`, `POST`  
+**Routes:** `product-sharing/settings/sender`, `product-sharing/settings/receiver`
+
+Reads or replaces the org-scoped `settings.productSharing` group. Sender and receiver settings use separate route surfaces for clarity, but both persist into the same underlying settings object.
+
+### Settings request body
+
+```json
+{
+  "productSharing": {
+    "senderDefaults": {
+      "shareActiveProductsOnly": true
+    },
+    "receiverDefaults": {
+      "defaultImportProductStatus": "DRAFT",
+      "defaultUpdateProductStatus": "KEEP_EXISTING",
+      "taxEnabledByDefault": true
+    },
+    "pricing": {
+      "receiverPriceModifier": {
+        "adjustmentType": "PERCENTAGE",
+        "amount": 10
+      },
+      "priceSourceRule": "LOWEST_COMPARE_AT_OR_REGULAR",
+      "roundingRule": {
+        "mode": "ROUND_TO_NEAREST",
+        "increment": 0.05
+      }
+    },
+    "matching": {
+      "matchBySku": true,
+      "matchByHandle": true,
+      "matchByTitle": false
+    },
+    "metafieldPromptSuppressions": [
+      {
+        "namespace": "custom",
+        "key": "material",
+        "type": "single_line_text_field"
+      }
+    ]
+  }
+}
+```
+
+### Settings success response
+
+```json
+{
+  "productSharing": {
+    "senderDefaults": {
+      "shareActiveProductsOnly": true
+    },
+    "receiverDefaults": {
+      "defaultImportProductStatus": "DRAFT",
+      "defaultUpdateProductStatus": "KEEP_EXISTING",
+      "taxEnabledByDefault": true
+    },
+    "pricing": {
+      "receiverPriceModifier": {
+        "adjustmentType": "PERCENTAGE",
+        "amount": 10
+      },
+      "priceSourceRule": "LOWEST_COMPARE_AT_OR_REGULAR",
+      "roundingRule": {
+        "mode": "ROUND_TO_NEAREST",
+        "increment": 0.05
+      }
+    },
+    "matching": {
+      "matchBySku": true,
+      "matchByHandle": true,
+      "matchByTitle": false
+    },
+    "metafieldPromptSuppressions": [
+      {
+        "namespace": "custom",
+        "key": "material",
+        "type": "single_line_text_field"
+      }
+    ]
+  }
+}
+```
+
+### Store Key
+
+**Method:** `POST`  
+**Route:** `product-sharing/store-key/reroll`
+
+Rerolls the org-level receiver store key.
+
+### Success response
+
+```json
+{
+  "productSharingStoreKey": "store_ABC123DEF456",
+  "updatedAt": "2026-05-30T00:00:00.000Z"
+}
+```
+
+### Refresh
+
+**Method:** `POST`  
+**Route:** `product-sharing/refresh`
+
+Queues an org-scoped sender snapshot refresh plus metafield-definition refresh.
+
+### Rules
+
+* refresh is org-scoped, not group-scoped
+* only one active refresh is allowed at a time per org
+* repeated manual refreshes are protected by a 5-minute cooldown
+* when rate-limited or blocked by cooldown, endpoint returns HTTP `429` with `"Please try again later."`
+
+### Success response
+
+```json
+{
+  "scheduled": true
+}
+```
+
+### Groups
+
+**Methods:** `GET`, `POST`  
+**Routes:**  
+`product-sharing/groups`  
+`product-sharing/groups/create`  
+`product-sharing/groups/{id}`  
+`product-sharing/groups/update/{id}`  
+`product-sharing/groups/delete/{id}`  
+`product-sharing/groups/{id}/reroll-key`
+
+Creates, lists, reads, updates, deletes, and rerolls sender group keys.
+
+### Group create body
+
+```json
+{
+  "name": "Spring 2026",
+  "includeProductIds": ["gid://shopify/Product/1001"],
+  "includeCollectionIds": ["gid://shopify/Collection/2001"],
+  "excludeProductIds": [],
+  "excludeCollectionIds": [],
+  "priceModifier": {
+    "adjustmentType": "PERCENTAGE",
+    "amount": 5
+  }
+}
+```
+
+### Group update body
+
+```json
+{
+  "name": "Spring 2026 Updated",
+  "excludeProductIds": ["gid://shopify/Product/1002"]
+}
+```
+
+### Group success shape
+
+```json
+{
+  "group": {
+    "id": "681111114f9a9b0012345678",
+    "org": "681111114f9a9b0012345670",
+    "name": "Spring 2026",
+    "key": "grp_ABC123DEF456",
+    "includeRules": {
+      "productIds": ["gid://shopify/Product/1001"],
+      "collectionIds": ["gid://shopify/Collection/2001"]
+    },
+    "excludeRules": {
+      "productIds": [],
+      "collectionIds": []
+    },
+    "priceModifier": {
+      "adjustmentType": "PERCENTAGE",
+      "amount": 5
+    },
+    "createdAt": "2026-05-30T00:00:00.000Z",
+    "updatedAt": "2026-05-30T00:00:00.000Z"
+  }
+}
+```
+
+### Connections
+
+**Methods:** `GET`, `POST`  
+**Routes:**  
+`product-sharing/connections/join-by-group-key`  
+`product-sharing/connections/add-by-store-key`  
+`product-sharing/connections/add-existing-receiver`  
+`product-sharing/connections/remove`  
+`product-sharing/connections/block-sender`  
+`product-sharing/connections/sender`  
+`product-sharing/connections/receiver`
+
+Creates or updates sender/receiver connections and lists them from either side.
+
+### Connection request bodies
+
+Join by group key:
+
+```json
+{
+  "groupKey": "grp_ABC123DEF456"
+}
+```
+
+Add by receiver store key:
+
+```json
+{
+  "groupId": "681111114f9a9b0012345678",
+  "storeKey": "store_ABC123DEF456"
+}
+```
+
+Add existing receiver:
+
+```json
+{
+  "groupId": "681111114f9a9b0012345678",
+  "receiverOrgId": "681111114f9a9b0012345688"
+}
+```
+
+Remove connection:
+
+```json
+{
+  "connectionId": "681111114f9a9b0012345699"
+}
+```
+
+Block sender:
+
+```json
+{
+  "senderOrgId": "681111114f9a9b0012345680"
+}
+```
+
+### Connection rules
+
+* join/key-entry endpoints are rate-limited to 20 attempts per 15 minutes per org
+* key reroll endpoints are rate-limited to 5 per day per org
+* blocking a sender marks current active receiver connections as `BLOCKED`
+* removing a connection sets status to `REMOVED_BY_SENDER` or `REMOVED_BY_RECEIVER`
+
+### Connection success shape
+
+```json
+{
+  "connectionId": "681111114f9a9b0012345699",
+  "connections": [
+    {
+      "id": "681111114f9a9b0012345699",
+      "senderOrgId": "681111114f9a9b0012345670",
+      "receiverOrgId": "681111114f9a9b0012345688",
+      "groupId": "681111114f9a9b0012345678",
+      "status": "ACTIVE",
+      "source": "GROUP_KEY"
+    }
+  ]
+}
+```
+
+### Browse Products
+
+**Method:** `GET`  
+**Route:** `product-sharing/products`
+
+Returns the receiver’s accessible browse table rows using current group access, group rules, sender snapshots, and receiver pricing settings.
+
+### Browse query parameters
+
+* `groupId: string` (optional)
+* `senderOrgId: string` (optional)
+* `vendor: string` (optional)
+* `productType: string` (optional)
+* `tag: string` (optional)
+* `status: string` (optional)
+* `collectionId: string` (optional)
+* `search: string` (optional, max 250 chars)
+* `sort: "title" | "vendor" | "status" | "adjustedPrice"` (optional)
+* `direction: "asc" | "desc"` (optional)
+* `page: number` (optional, default `1`)
+* `pageSize: number` (optional, max `50`, default `25`)
+
+### Browse success response
+
+```json
+{
+  "page": 1,
+  "pageSize": 25,
+  "total": 2,
+  "items": [
+    {
+      "senderOrgId": "681111114f9a9b0012345670",
+      "senderProductId": "gid://shopify/Product/1001",
+      "title": "Widget",
+      "vendor": "Acme",
+      "productType": "Accessory",
+      "status": "ACTIVE",
+      "tags": ["spring"],
+      "collectionIds": ["gid://shopify/Collection/2001"],
+      "checksum": "abc123",
+      "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
+      "adjustedPrice": 22.5,
+      "groupIds": ["681111114f9a9b0012345678"],
+      "selectedGroupId": "681111114f9a9b0012345678"
+    }
+  ]
+}
+```
+
+### Preview Sync
+
+**Method:** `POST`  
+**Route:** `product-sharing/preview`
+
+Resolves explicit or server-side `selectAll` selection, detects blockers, applies matching rules, and returns the source-of-truth preflight payload used by frontend import/update UX.
+
+### Preview request body
+
+```json
+{
+  "operation": "IMPORT",
+  "preferExistingMatch": true,
+  "groupId": "681111114f9a9b0012345678",
+  "senderOrgId": null,
+  "vendor": null,
+  "productType": null,
+  "tag": null,
+  "status": null,
+  "collectionId": null,
+  "sort": "adjustedPrice",
+  "direction": "desc",
+  "senderProductIds": null,
+  "receiverProductOverrides": {
+    "gid://shopify/Product/1001": "gid://shopify/Product/9001"
+  },
+  "selectAll": true,
+  "search": "widget"
+}
+```
+
+### Preview rules
+
+* explicit selection max is 200 product ids
+* resolved server-side select-all max is 1,000 products
+* preview blocks when products already exist in unfinished jobs
+* preview blocks ambiguous non-linkage matching until the caller supplies `receiverProductOverrides`
+* preview flags missing metafield definitions and zero-price outcomes
+
+### Preview success response
+
+```json
+{
+  "totalMatchedResults": 2,
+  "totalSelected": 2,
+  "capApplied": false,
+  "blockers": [],
+  "summary": {
+    "createCount": 1,
+    "updateCount": 1,
+    "blockedCount": 0
+  },
+  "products": [
+    {
+      "senderOrgId": "681111114f9a9b0012345670",
+      "senderProductId": "gid://shopify/Product/1001",
+      "title": "Widget",
+      "vendor": "Acme",
+      "productType": "Accessory",
+      "status": "ACTIVE",
+      "adjustedPrice": 22.5,
+      "selectedGroupId": "681111114f9a9b0012345678",
+      "groupIds": ["681111114f9a9b0012345678"],
+      "receiverProductId": "gid://shopify/Product/9001",
+      "action": "UPDATE",
+      "alreadyQueued": false,
+      "ambiguousMatch": false,
+      "matchedExistingProducts": [
+        {
+          "id": "gid://shopify/Product/9001",
+          "title": "Widget Existing"
+        }
+      ],
+      "willCreate": false,
+      "willUpdate": true,
+      "missingMetafieldDefinitions": true,
+      "missingMetafieldDefinitionCount": 2,
+      "zeroPriceWarning": false
+    }
+  ],
+  "sample": []
+}
+```
+
+### Create Sync Jobs
+
+**Method:** `POST`  
+**Route:** `product-sharing/sync`
+
+Creates durable chunked jobs of up to 25 products per job, then queues worker execution.
+
+### Sync request body
+
+Uses the same filter/selection fields as preview plus:
+
+```json
+{
+  "operation": "IMPORT",
+  "preferExistingMatch": true,
+  "createMissingMetafieldDefinitions": true,
+  "selectAll": true,
+  "search": "widget",
+  "receiverProductOverrides": {
+    "gid://shopify/Product/1001": "gid://shopify/Product/9001"
+  }
+}
+```
+
+### Sync success response
+
+```json
+{
+  "createdJobCount": 1,
+  "selectedProductCount": 2,
+  "summary": {
+    "createCount": 1,
+    "updateCount": 1,
+    "blockedCount": 0
+  },
+  "jobs": [
+    {
+      "id": "681111114f9a9b0012345701",
+      "senderOrg": "681111114f9a9b0012345670",
+      "receiverOrg": "681111114f9a9b0012345688",
+      "operation": "IMPORT",
+      "status": "PENDING",
+      "itemCount": 2,
+      "requestedAt": "2026-05-30T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Retry Failed Sync Jobs
+
+**Method:** `POST`  
+**Route:** `product-sharing/sync/retry-failed`
+
+Retries only the failed items from failed jobs by creating new pending jobs and marking the original jobs as `RETRIED`.
+
+### Retry body
+
+```json
+{
+  "jobIds": ["681111114f9a9b0012345701", "681111114f9a9b0012345702"]
+}
+```
+
+### Retry success response
+
+```json
+{
+  "retriedJobCount": 2
+}
+```
+
+### Dismiss Failed Sync Jobs
+
+**Method:** `POST`  
+**Route:** `product-sharing/sync/dismiss-failed`
+
+Marks failed jobs as `CANCELLED`.
+
+### Dismiss body
+
+```json
+{
+  "jobIds": ["681111114f9a9b0012345701", "681111114f9a9b0012345702"]
+}
+```
+
+### Dismiss success response
+
+```json
+{
+  "modifiedCount": 2,
+  "cancelledAt": "2026-05-30T00:00:00.000Z"
+}
+```
+
+### History
+
+**Method:** `GET`  
+**Route:** `product-sharing/history`
+
+Returns immutable 90-day product-level history rows for sender or receiver views.
+
+### History query parameters
+
+* `view: "receiver" | "sender"` (optional, default receiver semantics)
+* `groupId: string` (optional)
+* `senderOrgId: string` (optional)
+* `receiverOrgId: string` (optional)
+* `status: "SUCCEEDED" | "FAILED" | "SKIPPED"` (optional)
+* `productId: string` (optional)
+* `from: ISO date string` (optional)
+* `to: ISO date string` (optional)
+* `page: number` (optional, default `1`)
+* `pageSize: number` (optional, max `50`, default `25`)
+
+### History success response
+
+```json
+{
+  "page": 1,
+  "pageSize": 25,
+  "total": 1,
+  "items": [
+    {
+      "id": "681111114f9a9b0012345801",
+      "senderOrgId": "681111114f9a9b0012345670",
+      "receiverOrgId": "681111114f9a9b0012345688",
+      "groupId": "681111114f9a9b0012345678",
+      "senderProductId": "gid://shopify/Product/1001",
+      "receiverProductId": "gid://shopify/Product/9001",
+      "senderChecksum": "abc123",
+      "importedFields": ["title", "descriptionHtml", "variants", "metafields", "media"],
+      "variantDetails": [
+        {
+          "senderVariantId": "gid://shopify/ProductVariant/3001",
+          "receiverVariantId": "gid://shopify/ProductVariant/8001",
+          "sku": "WIDGET-BLACK"
+        }
+      ],
+      "status": "FAILED",
+      "happenedAt": "2026-05-30T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Invite Group
+
+**Method:** `POST`  
+**Route:** `product-sharing/invite/group`
+
+Sends a styled email containing a group key and instructions. No invite lifecycle records are created.
+
+### Invite group body
+
+```json
+{
+  "groupId": "681111114f9a9b0012345678",
+  "email": "receiver@example.com"
+}
+```
+
+### Invite Store
+
+**Method:** `POST`  
+**Route:** `product-sharing/invite/store`
+
+Sends a styled email containing the receiver store key and instructions. No invite lifecycle records are created.
+
+### Invite store body
+
+```json
+{
+  "email": "receiver@example.com"
+}
+```
+
+### Invite rules
+
+* invite emails are rate-limited to 40 per hour per org
+* each destination email is rate-limited to 5 sends per day per org
+* when rate-limited, endpoint returns HTTP `429` with `"Please try again later."`
+
+### Invite success response
+
+```json
+{
+  "sent": true
+}
+```
