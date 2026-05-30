@@ -28,7 +28,7 @@ export const ProductSharingSyncJobItemSchema = z.object({
   groupId: z.string().min(1),
   status: ProductSharingSyncItemStatusSchema,
   receiverProductId: z.string().optional().nullable(),
-  selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(10),
+  selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(12),
   statusOverride: ProductSharingDefaultProductStatusSchema,
   taxEnabledOverride: z.boolean().optional().nullable(),
   excludedVariantIds: z.array(z.string().min(1)).max(250),

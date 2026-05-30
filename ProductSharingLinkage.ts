@@ -14,6 +14,7 @@ export const ProductSharingLinkageEntitySchema = z.object({
   activeGroup: ObjectIdSchema.optional().nullable(),
   lastDownloadedChecksum: z.string().optional().nullable(),
   lastDownloadedAt: z.date().optional().nullable(),
+  selectedVariantIds: z.array(z.string().min(1)).max(1000),
   excludedVariantIds: z.array(z.string().min(1)).max(1000),
   excludedOptionValues: z.array(z.string().min(1)).max(1000),
   createdAt: z.date(),

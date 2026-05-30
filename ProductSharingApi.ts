@@ -6,6 +6,14 @@ import {
   ProductSharingSettingsSchema,
 } from "./settings/productSharing";
 import { parseJsonBody } from "./apiParsing";
+import {
+  ProductSharingConnectionSourceSchema,
+  ProductSharingConnectionStatusSchema,
+} from "./ProductSharingConnection";
+import {
+  ProductSharingHistoryStatusSchema,
+  ProductSharingHistoryVariantDetailSchema,
+} from "./ProductSharingHistoryEvent";
 
 export const ProductSharingSyncFieldSchema = z.enum([
   "title",
@@ -16,6 +24,8 @@ export const ProductSharingSyncFieldSchema = z.enum([
   "status",
   "seo",
   "variants",
+  "pricing",
+  "compareAtPricing",
   "metafields",
   "media",
 ]);
@@ -25,6 +35,454 @@ export const ProductSharingBrowseStatusSchema = z.enum([
   "UPDATE_AVAILABLE",
   "ACCESS_REMOVED",
 ]);
+export const ProductSharingSyncFieldListSchema = z
+  .array(ProductSharingSyncFieldSchema)
+  .max(12);
+
+export const ProductSharingGroupModelSchema = z.object({
+  id: z.string().min(1),
+  org: z.string().min(1),
+  name: z.string().min(1).max(120),
+  key: z.string().min(1),
+  includeRules: z
+    .object({
+      productIds: z.array(z.string().min(1)).optional().nullable(),
+      collectionIds: z.array(z.string().min(1)).optional().nullable(),
+    })
+    .optional()
+    .nullable(),
+  excludeRules: z
+    .object({
+      productIds: z.array(z.string().min(1)).optional().nullable(),
+      collectionIds: z.array(z.string().min(1)).optional().nullable(),
+    })
+    .optional()
+    .nullable(),
+  priceModifier: ProductSharingPriceModifierSchema.optional().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type ProductSharingGroupModel = z.infer<typeof ProductSharingGroupModelSchema>;
+
+export const ProductSharingConnectedReceiverSchema = z.object({
+  id: z.string().min(1),
+  receiverOrgId: z.string().min(1),
+  receiverName: z.string().optional().nullable(),
+  status: z.enum([
+    "ACTIVE",
+    "REMOVED_BY_SENDER",
+    "REMOVED_BY_RECEIVER",
+    "BLOCKED",
+    "ACCESS_REMOVED",
+  ]),
+  source: z.enum(["GROUP_KEY", "STORE_KEY", "EXISTING_RECEIVER"]),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  removedAt: z.date().optional().nullable(),
+});
+
+export type ProductSharingConnectedReceiver = z.infer<
+  typeof ProductSharingConnectedReceiverSchema
+>;
+
+export const ProductSharingSenderGroupPreviewProductSchema = z.object({
+  senderProductId: z.string().min(1),
+  title: z.string().min(1),
+  vendor: z.string().optional().nullable(),
+  productType: z.string().optional().nullable(),
+  sourceStatus: z.string().optional().nullable(),
+  collectionIds: z.array(z.string().min(1)),
+  tags: z.array(z.string()),
+  adjustedPrice: z.number().optional().nullable(),
+  sourceUpdatedAt: z.date(),
+  checksum: z.string().min(1),
+  availableFields: ProductSharingSyncFieldListSchema,
+});
+
+export type ProductSharingSenderGroupPreviewProduct = z.infer<
+  typeof ProductSharingSenderGroupPreviewProductSchema
+>;
+
+export const ProductSharingGroupListResponseSchema = z.object({
+  groups: z.array(ProductSharingGroupModelSchema),
+});
+
+export type ProductSharingGroupListResponse = z.infer<
+  typeof ProductSharingGroupListResponseSchema
+>;
+
+export const ProductSharingGroupMutationResponseSchema = z.object({
+  group: ProductSharingGroupModelSchema,
+});
+
+export type ProductSharingGroupMutationResponse = z.infer<
+  typeof ProductSharingGroupMutationResponseSchema
+>;
+
+export const ProductSharingGroupDeleteResponseSchema = z.object({
+  deleted: z.literal(true),
+  id: z.string().min(1),
+});
+
+export type ProductSharingGroupDeleteResponse = z.infer<
+  typeof ProductSharingGroupDeleteResponseSchema
+>;
+
+export const ProductSharingGroupDetailResponseSchema = z.object({
+  group: ProductSharingGroupModelSchema,
+  connectedReceivers: z.array(ProductSharingConnectedReceiverSchema),
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1).max(50),
+  totalProducts: z.number().int().min(0),
+  products: z.array(ProductSharingSenderGroupPreviewProductSchema),
+});
+
+export type ProductSharingGroupDetailResponse = z.infer<
+  typeof ProductSharingGroupDetailResponseSchema
+>;
+
+export const ProductSharingConnectionModelSchema = z.object({
+  id: z.string().min(1),
+  senderOrg: z.string().min(1),
+  receiverOrg: z.string().min(1),
+  group: z.string().min(1),
+  status: ProductSharingConnectionStatusSchema,
+  source: ProductSharingConnectionSourceSchema,
+  senderName: z.string().optional().nullable(),
+  receiverName: z.string().optional().nullable(),
+  groupName: z.string().optional().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  removedAt: z.date().optional().nullable(),
+});
+
+export type ProductSharingConnectionModel = z.infer<
+  typeof ProductSharingConnectionModelSchema
+>;
+
+export const ProductSharingConnectionListResponseSchema = z.object({
+  connections: z.array(ProductSharingConnectionModelSchema),
+});
+
+export type ProductSharingConnectionListResponse = z.infer<
+  typeof ProductSharingConnectionListResponseSchema
+>;
+
+export const ProductSharingJoinByGroupKeyResponseSchema =
+  ProductSharingConnectionListResponseSchema.extend({
+    connectionId: z.string().min(1),
+  });
+
+export type ProductSharingJoinByGroupKeyResponse = z.infer<
+  typeof ProductSharingJoinByGroupKeyResponseSchema
+>;
+
+export const ProductSharingRemoveConnectionResponseSchema = z.object({
+  removed: z.literal(true),
+  status: ProductSharingConnectionStatusSchema.exclude(["ACTIVE"]),
+});
+
+export type ProductSharingRemoveConnectionResponse = z.infer<
+  typeof ProductSharingRemoveConnectionResponseSchema
+>;
+
+export const ProductSharingBlockSenderResponseSchema =
+  ProductSharingConnectionListResponseSchema.extend({
+    blocked: z.literal(true),
+  });
+
+export type ProductSharingBlockSenderResponse = z.infer<
+  typeof ProductSharingBlockSenderResponseSchema
+>;
+
+export const ProductSharingBrowseProductSchema = z.object({
+  senderOrgId: z.string().min(1),
+  senderName: z.string().optional().nullable(),
+  senderProductId: z.string().min(1),
+  title: z.string().min(1),
+  vendor: z.string().optional().nullable(),
+  productType: z.string().optional().nullable(),
+  sourceStatus: z.string().optional().nullable(),
+  status: ProductSharingBrowseStatusSchema,
+  tags: z.array(z.string()),
+  collectionIds: z.array(z.string().min(1)),
+  checksum: z.string().min(1),
+  sourceUpdatedAt: z.date(),
+  importedAt: z.date().optional().nullable(),
+  adjustedPrice: z.number().optional().nullable(),
+  groupIds: z.array(z.string().min(1)),
+  groupNames: z.array(z.string()),
+  selectedGroupId: z.string().min(1),
+  selectedGroupName: z.string().optional().nullable(),
+  receiverProductId: z.string().optional().nullable(),
+});
+
+export type ProductSharingBrowseProduct = z.infer<
+  typeof ProductSharingBrowseProductSchema
+>;
+
+export const ProductSharingBrowseResponseSchema = z.object({
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1).max(50),
+  total: z.number().int().min(0),
+  items: z.array(ProductSharingBrowseProductSchema),
+});
+
+export type ProductSharingBrowseResponse = z.infer<
+  typeof ProductSharingBrowseResponseSchema
+>;
+
+export const ProductSharingPreviewMatchedExistingProductSchema = z.object({
+  id: z.string().min(1),
+  title: z.string(),
+});
+
+export type ProductSharingPreviewMatchedExistingProduct = z.infer<
+  typeof ProductSharingPreviewMatchedExistingProductSchema
+>;
+
+export const ProductSharingPreviewLinkageConflictSchema = z.object({
+  receiverProductId: z.string().min(1),
+  senderOrgId: z.string().min(1),
+  senderProductId: z.string().min(1),
+});
+
+export type ProductSharingPreviewLinkageConflict = z.infer<
+  typeof ProductSharingPreviewLinkageConflictSchema
+>;
+
+export const ProductSharingPreviewBlockedReasonSchema = z.enum([
+  "ACCESS_REMOVED",
+  "ALREADY_QUEUED",
+  "AMBIGUOUS_MATCH",
+  "LINKAGE_CONFLICT",
+]);
+
+export type ProductSharingPreviewBlockedReason = z.infer<
+  typeof ProductSharingPreviewBlockedReasonSchema
+>;
+
+export const ProductSharingPreviewVariantSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  sku: z.string().optional().nullable(),
+  selected: z.boolean(),
+  selectedOptions: z.array(
+    z.object({
+      name: z.string().min(1),
+      value: z.string().min(1),
+    }),
+  ),
+});
+
+export type ProductSharingPreviewVariant = z.infer<
+  typeof ProductSharingPreviewVariantSchema
+>;
+
+export const ProductSharingPreviewOptionValueSchema = z.object({
+  value: z.string().min(1),
+  selected: z.boolean(),
+});
+
+export type ProductSharingPreviewOptionValue = z.infer<
+  typeof ProductSharingPreviewOptionValueSchema
+>;
+
+export const ProductSharingPreviewOptionSchema = z.object({
+  name: z.string().min(1),
+  values: z.array(ProductSharingPreviewOptionValueSchema),
+});
+
+export type ProductSharingPreviewOption = z.infer<
+  typeof ProductSharingPreviewOptionSchema
+>;
+
+export const ProductSharingMissingMetafieldDefinitionSchema = z.object({
+  ownerType: z.enum(["PRODUCT", "VARIANT"]),
+  namespace: z.string().min(1),
+  key: z.string().min(1),
+  type: z.string().min(1),
+});
+
+export type ProductSharingMissingMetafieldDefinition = z.infer<
+  typeof ProductSharingMissingMetafieldDefinitionSchema
+>;
+
+export const ProductSharingPreviewProductSchema = z.object({
+  senderOrgId: z.string().min(1),
+  senderName: z.string().optional().nullable(),
+  senderProductId: z.string().min(1),
+  title: z.string().min(1),
+  vendor: z.string().optional().nullable(),
+  productType: z.string().optional().nullable(),
+  sourceStatus: z.string().optional().nullable(),
+  status: ProductSharingBrowseStatusSchema,
+  adjustedPrice: z.number().optional().nullable(),
+  sourceUpdatedAt: z.date(),
+  importedAt: z.date().optional().nullable(),
+  selectedGroupId: z.string().min(1),
+  selectedGroupName: z.string().optional().nullable(),
+  groupIds: z.array(z.string().min(1)),
+  groupNames: z.array(z.string()),
+  receiverProductId: z.string().optional().nullable(),
+  action: z.enum(["IMPORT", "UPDATE"]),
+  alreadyQueued: z.boolean(),
+  blockedReason: ProductSharingPreviewBlockedReasonSchema.optional().nullable(),
+  linkageConflict: ProductSharingPreviewLinkageConflictSchema.optional().nullable(),
+  ambiguousMatch: z.boolean(),
+  matchedExistingProducts: z.array(ProductSharingPreviewMatchedExistingProductSchema),
+  willCreate: z.boolean(),
+  willUpdate: z.boolean(),
+  availableFields: ProductSharingSyncFieldListSchema,
+  selectedFields: ProductSharingSyncFieldListSchema,
+  newFields: ProductSharingSyncFieldListSchema,
+  overrideFields: ProductSharingSyncFieldListSchema,
+  availableVariants: z.array(ProductSharingPreviewVariantSchema),
+  availableOptions: z.array(ProductSharingPreviewOptionSchema),
+  missingMetafieldDefinitionDetails: z.array(ProductSharingMissingMetafieldDefinitionSchema),
+  missingMetafieldDefinitions: z.boolean(),
+  missingMetafieldDefinitionCount: z.number().int().min(0),
+  zeroPriceWarning: z.boolean(),
+  taxEnabled: z.boolean(),
+  statusOverride: ProductSharingDefaultProductStatusSchema,
+});
+
+export type ProductSharingPreviewProduct = z.infer<
+  typeof ProductSharingPreviewProductSchema
+>;
+
+export const ProductSharingPreviewSummarySchema = z.object({
+  createCount: z.number().int().min(0),
+  updateCount: z.number().int().min(0),
+  blockedCount: z.number().int().min(0),
+});
+
+export type ProductSharingPreviewSummary = z.infer<
+  typeof ProductSharingPreviewSummarySchema
+>;
+
+export const ProductSharingPreviewResponseSchema = z.object({
+  totalMatchedResults: z.number().int().min(0),
+  totalSelected: z.number().int().min(0),
+  capApplied: z.boolean(),
+  blockers: z.array(ProductSharingPreviewProductSchema),
+  summary: ProductSharingPreviewSummarySchema,
+  products: z.array(ProductSharingPreviewProductSchema),
+  sample: z.array(ProductSharingPreviewProductSchema),
+});
+
+export type ProductSharingPreviewResponse = z.infer<
+  typeof ProductSharingPreviewResponseSchema
+>;
+
+export const ProductSharingSyncJobSummarySchema = z.object({
+  id: z.string().min(1),
+  senderOrg: z.string().min(1),
+  receiverOrg: z.string().min(1),
+  operation: z.enum(["IMPORT", "UPDATE"]),
+  status: z.literal("PENDING"),
+  itemCount: z.number().int().min(1).max(25),
+  requestedAt: z.date(),
+});
+
+export type ProductSharingSyncJobSummary = z.infer<
+  typeof ProductSharingSyncJobSummarySchema
+>;
+
+export const ProductSharingCreateSyncJobsResponseSchema = z.object({
+  createdJobCount: z.number().int().min(0),
+  selectedProductCount: z.number().int().min(0),
+  summary: ProductSharingPreviewSummarySchema,
+  jobs: z.array(ProductSharingSyncJobSummarySchema),
+});
+
+export type ProductSharingCreateSyncJobsResponse = z.infer<
+  typeof ProductSharingCreateSyncJobsResponseSchema
+>;
+
+export const ProductSharingSyncRouteResponseSchema = z.union([
+  ProductSharingCreateSyncJobsResponseSchema,
+  ProductSharingPreviewResponseSchema,
+]);
+
+export type ProductSharingSyncRouteResponse = z.infer<
+  typeof ProductSharingSyncRouteResponseSchema
+>;
+
+export const ProductSharingRetryFailedSyncResponseSchema = z.object({
+  retriedJobCount: z.number().int().min(0),
+});
+
+export type ProductSharingRetryFailedSyncResponse = z.infer<
+  typeof ProductSharingRetryFailedSyncResponseSchema
+>;
+
+export const ProductSharingDismissFailedSyncResponseSchema = z.object({
+  modifiedCount: z.number().int().min(0),
+  cancelledAt: z.date(),
+});
+
+export type ProductSharingDismissFailedSyncResponse = z.infer<
+  typeof ProductSharingDismissFailedSyncResponseSchema
+>;
+
+export const ProductSharingSyncBannerSummarySchema = z.object({
+  jobCount: z.number().int().min(0),
+  itemCount: z.number().int().min(0),
+  importCount: z.number().int().min(0),
+  updateCount: z.number().int().min(0),
+});
+
+export type ProductSharingSyncBannerSummary = z.infer<
+  typeof ProductSharingSyncBannerSummarySchema
+>;
+
+export const ProductSharingSyncStatusResponseSchema = z.object({
+  active: ProductSharingSyncBannerSummarySchema,
+  failed: ProductSharingSyncBannerSummarySchema,
+});
+
+export type ProductSharingSyncStatusResponse = z.infer<
+  typeof ProductSharingSyncStatusResponseSchema
+>;
+
+export const ProductSharingHistoryItemSchema = z.object({
+  id: z.string().min(1),
+  senderOrgId: z.string().min(1),
+  receiverOrgId: z.string().min(1),
+  groupId: z.string().min(1),
+  senderProductId: z.string().min(1),
+  receiverProductId: z.string().optional().nullable(),
+  senderChecksum: z.string().optional().nullable(),
+  importedFields: z.array(z.string().min(1)).max(200),
+  variantDetails: z.array(ProductSharingHistoryVariantDetailSchema).max(500),
+  status: ProductSharingHistoryStatusSchema,
+  happenedAt: z.date(),
+});
+
+export type ProductSharingHistoryItem = z.infer<
+  typeof ProductSharingHistoryItemSchema
+>;
+
+export const ProductSharingHistoryResponseSchema = z.object({
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1).max(50),
+  total: z.number().int().min(0),
+  items: z.array(ProductSharingHistoryItemSchema),
+});
+
+export type ProductSharingHistoryResponse = z.infer<
+  typeof ProductSharingHistoryResponseSchema
+>;
+
+export const ProductSharingInviteResponseSchema = z.object({
+  sent: z.literal(true),
+});
+
+export type ProductSharingInviteResponse = z.infer<
+  typeof ProductSharingInviteResponseSchema
+>;
 
 const ProductSharingSenderProductIdRecordSchema = z.record(z.string(), z.string().min(1));
 const ProductSharingSenderProductArrayRecordSchema = z.record(
@@ -33,6 +491,14 @@ const ProductSharingSenderProductArrayRecordSchema = z.record(
 );
 
 export const ProductSharingRefreshBodySchema = z.object({}).passthrough();
+
+export const ProductSharingRefreshResponseSchema = z.object({
+  scheduled: z.literal(true),
+});
+
+export type ProductSharingRefreshResponse = z.infer<
+  typeof ProductSharingRefreshResponseSchema
+>;
 
 export const ProductSharingSettingsUpdateBodySchema = z.object({
   productSharing: ProductSharingSettingsSchema,
@@ -60,6 +526,22 @@ export const ProductSharingGroupUpdateBodySchema = z
     message: "Request body is not valid",
   });
 
+export const ProductSharingSenderGroupDetailQuerySchema = z.object({
+  vendor: z.string().max(120).optional().nullable(),
+  productType: z.string().max(120).optional().nullable(),
+  tag: z.string().max(120).optional().nullable(),
+  status: z.string().max(120).optional().nullable(),
+  collectionId: z.string().max(250).optional().nullable(),
+  search: z.string().max(250).optional().nullable(),
+  sort: z
+    .enum(["title", "vendor", "status", "sourceUpdatedAt", "adjustedPrice"])
+    .optional()
+    .nullable(),
+  direction: z.enum(["asc", "desc"]).optional().nullable(),
+  page: z.coerce.number().int().min(1).max(10000).optional().nullable(),
+  pageSize: z.coerce.number().int().min(1).max(50).optional().nullable(),
+});
+
 export const ProductSharingJoinByGroupKeyBodySchema = z.object({
   groupKey: z.string().trim().min(1),
 });
@@ -85,7 +567,7 @@ export const ProductSharingBlockSenderBodySchema = z.object({
 export const ProductSharingPreviewBodySchema = z.object({
   operation: z.enum(["IMPORT", "UPDATE"]),
   preferExistingMatch: z.boolean().optional().nullable(),
-  selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(10).optional().nullable(),
+  selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(12).optional().nullable(),
   statusOverride: ProductSharingDefaultProductStatusSchema,
   taxEnabledOverride: z.boolean().optional().nullable(),
   groupId: z.string().optional().nullable(),
@@ -115,6 +597,8 @@ export const ProductSharingPreviewBodySchema = z.object({
   excludedOptionValuesByProduct: ProductSharingSenderProductArrayRecordSchema.optional().nullable(),
   selectAll: z.boolean().optional().nullable(),
   search: z.string().max(250).optional().nullable(),
+}).refine((value) => Boolean(value.selectAll || value.senderProductIds?.length), {
+  message: "Request body is not valid",
 });
 
 export const ProductSharingSyncBodySchema = z
@@ -122,7 +606,7 @@ export const ProductSharingSyncBodySchema = z
     operation: z.enum(["IMPORT", "UPDATE"]),
     preferExistingMatch: z.boolean().optional().nullable(),
     createMissingMetafieldDefinitions: z.boolean().optional().nullable(),
-    selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(10).optional().nullable(),
+    selectedFields: z.array(ProductSharingSyncFieldSchema).min(1).max(12).optional().nullable(),
     statusOverride: ProductSharingDefaultProductStatusSchema,
     taxEnabledOverride: z.boolean().optional().nullable(),
     groupId: z.string().optional().nullable(),
@@ -198,12 +682,12 @@ export const ProductSharingHistoryQuerySchema = z.object({
 });
 
 export const ProductSharingRetryFailedSyncBodySchema = z.object({
-  jobIds: z.array(z.string().min(1)).min(1).max(100),
-});
+  jobIds: z.array(z.string().min(1)).min(1).max(100).optional().nullable(),
+}).passthrough();
 
 export const ProductSharingDismissFailedSyncBodySchema = z.object({
-  jobIds: z.array(z.string().min(1)).min(1).max(100),
-});
+  jobIds: z.array(z.string().min(1)).min(1).max(100).optional().nullable(),
+}).passthrough();
 
 export const ProductSharingInviteGroupBodySchema = z.object({
   groupId: z.string().min(1),
@@ -241,6 +725,12 @@ export function parseProductSharingGroupUpdateBody(body: string | null | undefin
     allowEmpty: false,
     includeIssueMessages: false,
   });
+}
+
+export function parseProductSharingSenderGroupDetailQuery(
+  query: Record<string, string | undefined> | null | undefined,
+) {
+  return ProductSharingSenderGroupDetailQuerySchema.parse(query ?? {});
 }
 
 export function parseProductSharingJoinByGroupKeyBody(body: string | null | undefined) {
@@ -288,14 +778,16 @@ export function parseProductSharingHistoryQuery(query: Record<string, string | u
 
 export function parseProductSharingRetryFailedSyncBody(body: string | null | undefined) {
   return parseJsonBody(body, ProductSharingRetryFailedSyncBodySchema, {
-    allowEmpty: false,
+    allowEmpty: true,
+    emptyValue: {},
     includeIssueMessages: false,
   });
 }
 
 export function parseProductSharingDismissFailedSyncBody(body: string | null | undefined) {
   return parseJsonBody(body, ProductSharingDismissFailedSyncBodySchema, {
-    allowEmpty: false,
+    allowEmpty: true,
+    emptyValue: {},
     includeIssueMessages: false,
   });
 }

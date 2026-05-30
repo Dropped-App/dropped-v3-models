@@ -2740,9 +2740,117 @@ Creates, lists, reads, updates, deletes, and rerolls sender group keys.
     },
     "createdAt": "2026-05-30T00:00:00.000Z",
     "updatedAt": "2026-05-30T00:00:00.000Z"
-  }
+  },
+  "connectedReceivers": [
+    {
+      "id": "681111114f9a9b0012345699",
+      "receiverOrgId": "681111114f9a9b0012345688",
+      "receiverName": "Receiver Store",
+      "status": "ACTIVE",
+      "source": "GROUP_KEY",
+      "createdAt": "2026-05-30T00:00:00.000Z",
+      "updatedAt": "2026-05-30T00:00:00.000Z",
+      "removedAt": null
+    }
+  ],
+  "products": [
+    {
+      "senderProductId": "gid://shopify/Product/1001",
+      "title": "Widget",
+      "vendor": "Acme",
+      "productType": "Accessory",
+      "sourceStatus": "ACTIVE",
+      "collectionIds": ["gid://shopify/Collection/2001"],
+      "tags": ["spring"],
+      "adjustedPrice": 22.5,
+      "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
+      "checksum": "abc123"
+    }
+  ]
 }
 ```
+
+### Group route notes
+
+* `GET product-sharing/groups` returns `{ "groups": [...] }` with group records only
+* `GET product-sharing/groups/{id}` returns expanded sender detail payload with `group`, `connectedReceivers`, and preview `products`
+* sender-side preview rows respect sender `shareActiveProductsOnly` setting
+
+### Group detail query parameters
+
+`GET product-sharing/groups/{id}` also supports sender-side preview query controls:
+
+* `vendor: string` (optional)
+* `productType: string` (optional)
+* `tag: string` (optional)
+* `status: string` (optional, sender Shopify product status)
+* `collectionId: string` (optional)
+* `search: string` (optional, max 250 chars)
+* `sort: "title" | "vendor" | "status" | "sourceUpdatedAt" | "adjustedPrice"` (optional)
+* `direction: "asc" | "desc"` (optional)
+* `page: number` (optional, default `1`)
+* `pageSize: number` (optional, max `50`, default `25`)
+
+### Group detail response shape
+
+```json
+{
+  "group": {
+    "id": "681111114f9a9b0012345678",
+    "org": "681111114f9a9b0012345670",
+    "name": "Spring 2026",
+    "key": "grp_ABC123DEF456",
+    "includeRules": {
+      "productIds": ["gid://shopify/Product/1001"],
+      "collectionIds": ["gid://shopify/Collection/2001"]
+    },
+    "excludeRules": {
+      "productIds": [],
+      "collectionIds": []
+    },
+    "priceModifier": {
+      "adjustmentType": "PERCENTAGE",
+      "amount": 5
+    },
+    "createdAt": "2026-05-30T00:00:00.000Z",
+    "updatedAt": "2026-05-30T00:00:00.000Z"
+  },
+  "connectedReceivers": [
+    {
+      "id": "681111114f9a9b0012345699",
+      "receiverOrgId": "681111114f9a9b0012345688",
+      "receiverName": "Receiver Store",
+      "status": "ACTIVE",
+      "source": "GROUP_KEY",
+      "createdAt": "2026-05-30T00:00:00.000Z",
+      "updatedAt": "2026-05-30T00:00:00.000Z",
+      "removedAt": null
+    }
+  ],
+  "page": 1,
+  "pageSize": 25,
+  "totalProducts": 1,
+  "products": [
+    {
+      "senderProductId": "gid://shopify/Product/1001",
+      "title": "Widget",
+      "vendor": "Acme",
+      "productType": "Accessory",
+      "sourceStatus": "ACTIVE",
+      "collectionIds": ["gid://shopify/Collection/2001"],
+      "tags": ["spring"],
+      "adjustedPrice": 22.5,
+      "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
+      "checksum": "abc123",
+      "availableFields": ["title", "vendor", "productType", "tags", "variants", "media"]
+    }
+  ]
+}
+```
+
+### Group deletion note
+
+Deleting a group removes its group-scoped connections and re-evaluates receiver linkage access so stale group access is not left behind.
 
 ### Connections
 
@@ -2808,8 +2916,29 @@ Block sender:
 * key reroll endpoints are rate-limited to 5 per day per org
 * blocking a sender marks current active receiver connections as `BLOCKED`
 * removing a connection sets status to `REMOVED_BY_SENDER` or `REMOVED_BY_RECEIVER`
+* add-by-store-key only succeeds for receivers with an active installed Shopify connection
+* uninstalling the Shopify app clears the org's stored product-sharing store key
 
-### Connection success shape
+### Connection row shape
+
+```json
+{
+  "id": "681111114f9a9b0012345699",
+  "senderOrg": "681111114f9a9b0012345670",
+  "receiverOrg": "681111114f9a9b0012345688",
+  "group": "681111114f9a9b0012345678",
+  "status": "ACTIVE",
+  "source": "GROUP_KEY",
+  "senderName": "Sender Brand",
+  "receiverName": "Receiver Brand",
+  "groupName": "Wholesale",
+  "createdAt": "2026-05-30T00:00:00.000Z",
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "removedAt": null
+}
+```
+
+### Join by group key success
 
 ```json
 {
@@ -2817,11 +2946,73 @@ Block sender:
   "connections": [
     {
       "id": "681111114f9a9b0012345699",
-      "senderOrgId": "681111114f9a9b0012345670",
-      "receiverOrgId": "681111114f9a9b0012345688",
-      "groupId": "681111114f9a9b0012345678",
+      "senderOrg": "681111114f9a9b0012345670",
+      "receiverOrg": "681111114f9a9b0012345688",
+      "group": "681111114f9a9b0012345678",
       "status": "ACTIVE",
-      "source": "GROUP_KEY"
+      "source": "GROUP_KEY",
+      "senderName": "Sender Brand",
+      "receiverName": "Receiver Brand",
+      "groupName": "Wholesale",
+      "createdAt": "2026-05-30T00:00:00.000Z",
+      "updatedAt": "2026-05-30T00:00:00.000Z",
+      "removedAt": null
+    }
+  ]
+}
+```
+
+### Add by store key, add existing receiver, sender list, receiver list success
+
+```json
+{
+  "connections": [
+    {
+      "id": "681111114f9a9b0012345699",
+      "senderOrg": "681111114f9a9b0012345670",
+      "receiverOrg": "681111114f9a9b0012345688",
+      "group": "681111114f9a9b0012345678",
+      "status": "ACTIVE",
+      "source": "STORE_KEY",
+      "senderName": "Sender Brand",
+      "receiverName": "Receiver Brand",
+      "groupName": "Wholesale",
+      "createdAt": "2026-05-30T00:00:00.000Z",
+      "updatedAt": "2026-05-30T00:00:00.000Z",
+      "removedAt": null
+    }
+  ]
+}
+```
+
+### Remove connection success
+
+```json
+{
+  "removed": true,
+  "status": "REMOVED_BY_SENDER"
+}
+```
+
+### Block sender success
+
+```json
+{
+  "blocked": true,
+  "connections": [
+    {
+      "id": "681111114f9a9b0012345699",
+      "senderOrg": "681111114f9a9b0012345670",
+      "receiverOrg": "681111114f9a9b0012345688",
+      "group": "681111114f9a9b0012345678",
+      "status": "BLOCKED",
+      "source": "GROUP_KEY",
+      "senderName": "Sender Brand",
+      "receiverName": "Receiver Brand",
+      "groupName": "Wholesale",
+      "createdAt": "2026-05-30T00:00:00.000Z",
+      "updatedAt": "2026-05-30T00:00:00.000Z",
+      "removedAt": "2026-05-30T00:00:00.000Z"
     }
   ]
 }
@@ -2832,7 +3023,7 @@ Block sender:
 **Method:** `GET`  
 **Route:** `product-sharing/products`
 
-Returns the receiver’s accessible browse table rows using current group access, group rules, sender snapshots, and receiver pricing settings.
+Returns the receiverâ€™s accessible browse table rows using current group access, group rules, sender snapshots, and receiver pricing settings.
 
 ### Browse query parameters
 
@@ -2841,10 +3032,11 @@ Returns the receiver’s accessible browse table rows using current group access
 * `vendor: string` (optional)
 * `productType: string` (optional)
 * `tag: string` (optional)
-* `status: string` (optional)
+* `status: "NOT_IMPORTED" | "IMPORTED" | "UPDATE_AVAILABLE" | "ACCESS_REMOVED"` (optional)
+* `updatedSinceLastImport: boolean` (optional)
 * `collectionId: string` (optional)
 * `search: string` (optional, max 250 chars)
-* `sort: "title" | "vendor" | "status" | "adjustedPrice"` (optional)
+* `sort: "group" | "title" | "vendor" | "status" | "sourceUpdatedAt" | "importedAt" | "adjustedPrice"` (optional)
 * `direction: "asc" | "desc"` (optional)
 * `page: number` (optional, default `1`)
 * `pageSize: number` (optional, max `50`, default `25`)
@@ -2859,22 +3051,34 @@ Returns the receiver’s accessible browse table rows using current group access
   "items": [
     {
       "senderOrgId": "681111114f9a9b0012345670",
+      "senderName": "Sender Store",
       "senderProductId": "gid://shopify/Product/1001",
       "title": "Widget",
       "vendor": "Acme",
       "productType": "Accessory",
-      "status": "ACTIVE",
+      "sourceStatus": "ACTIVE",
+      "status": "UPDATE_AVAILABLE",
       "tags": ["spring"],
       "collectionIds": ["gid://shopify/Collection/2001"],
       "checksum": "abc123",
       "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
+      "importedAt": "2026-05-29T00:00:00.000Z",
       "adjustedPrice": 22.5,
       "groupIds": ["681111114f9a9b0012345678"],
-      "selectedGroupId": "681111114f9a9b0012345678"
+      "groupNames": ["Spring 2026"],
+      "selectedGroupId": "681111114f9a9b0012345678",
+      "selectedGroupName": "Spring 2026",
+      "receiverProductId": "gid://shopify/Product/9001"
     }
   ]
 }
 ```
+
+### Browse response notes
+
+* `status` is receiver-facing browse status, not sender Shopify product status
+* `sourceStatus` carries sender Shopify product status
+* rows may still be returned as `ACCESS_REMOVED` when linkage exists but current group access no longer does
 
 ### Preview Sync
 
@@ -2889,18 +3093,28 @@ Resolves explicit or server-side `selectAll` selection, detects blockers, applie
 {
   "operation": "IMPORT",
   "preferExistingMatch": true,
+  "selectedFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+  "statusOverride": "DEFAULT",
+  "taxEnabledOverride": null,
   "groupId": "681111114f9a9b0012345678",
   "senderOrgId": null,
   "vendor": null,
   "productType": null,
   "tag": null,
   "status": null,
+  "updatedSinceLastImport": false,
   "collectionId": null,
   "sort": "adjustedPrice",
   "direction": "desc",
   "senderProductIds": null,
   "receiverProductOverrides": {
     "gid://shopify/Product/1001": "gid://shopify/Product/9001"
+  },
+  "excludedVariantIdsByProduct": {
+    "gid://shopify/Product/1001": ["gid://shopify/ProductVariant/3002"]
+  },
+  "excludedOptionValuesByProduct": {
+    "gid://shopify/Product/1001": ["Color:Blue"]
   },
   "selectAll": true,
   "search": "widget"
@@ -2911,8 +3125,11 @@ Resolves explicit or server-side `selectAll` selection, detects blockers, applie
 
 * explicit selection max is 200 product ids
 * resolved server-side select-all max is 1,000 products
+* request must include either `senderProductIds` or `selectAll`
 * preview blocks when products already exist in unfinished jobs
 * preview blocks ambiguous non-linkage matching until the caller supplies `receiverProductOverrides`
+* preview blocks `ACCESS_REMOVED` rows before jobs are created and returns `blockedReason` for each blocked row
+* `selectedFields` can now independently include `variants`, `pricing`, and `compareAtPricing`
 * preview flags missing metafield definitions and zero-price outcomes
 
 ### Preview success response
@@ -2931,17 +3148,25 @@ Resolves explicit or server-side `selectAll` selection, detects blockers, applie
   "products": [
     {
       "senderOrgId": "681111114f9a9b0012345670",
+      "senderName": "Sender Store",
       "senderProductId": "gid://shopify/Product/1001",
       "title": "Widget",
       "vendor": "Acme",
       "productType": "Accessory",
-      "status": "ACTIVE",
+      "sourceStatus": "ACTIVE",
+      "status": "UPDATE_AVAILABLE",
       "adjustedPrice": 22.5,
+      "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
+      "importedAt": "2026-05-29T00:00:00.000Z",
       "selectedGroupId": "681111114f9a9b0012345678",
+      "selectedGroupName": "Spring 2026",
       "groupIds": ["681111114f9a9b0012345678"],
+      "groupNames": ["Spring 2026"],
       "receiverProductId": "gid://shopify/Product/9001",
       "action": "UPDATE",
       "alreadyQueued": false,
+      "blockedReason": null,
+      "linkageConflict": null,
       "ambiguousMatch": false,
       "matchedExistingProducts": [
         {
@@ -2951,14 +3176,100 @@ Resolves explicit or server-side `selectAll` selection, detects blockers, applie
       ],
       "willCreate": false,
       "willUpdate": true,
+      "availableFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "status", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+      "selectedFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+      "newFields": [],
+      "overrideFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+      "availableVariants": [
+        {
+          "id": "gid://shopify/ProductVariant/3001",
+          "title": "Black",
+          "sku": "WIDGET-BLACK",
+          "selected": true,
+          "selectedOptions": [
+            {
+              "name": "Color",
+              "value": "Black"
+            }
+          ]
+        }
+      ],
+      "availableOptions": [
+        {
+          "name": "Color",
+          "values": [
+            {
+              "value": "Black",
+              "selected": true
+            }
+          ]
+        }
+      ],
+      "missingMetafieldDefinitionDetails": [
+        {
+          "ownerType": "PRODUCT",
+          "namespace": "custom",
+          "key": "material",
+          "type": "single_line_text_field"
+        }
+      ],
       "missingMetafieldDefinitions": true,
-      "missingMetafieldDefinitionCount": 2,
-      "zeroPriceWarning": false
+      "missingMetafieldDefinitionCount": 1,
+      "zeroPriceWarning": false,
+      "taxEnabled": true,
+      "statusOverride": "DRAFT"
     }
   ],
-  "sample": []
+  "sample": [
+    {
+      "senderOrgId": "681111114f9a9b0012345670",
+      "senderName": "Sender Store",
+      "senderProductId": "gid://shopify/Product/1001",
+      "title": "Widget",
+      "vendor": "Acme",
+      "productType": "Accessory",
+      "sourceStatus": "ACTIVE",
+      "status": "UPDATE_AVAILABLE",
+      "adjustedPrice": 22.5,
+      "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
+      "importedAt": "2026-05-29T00:00:00.000Z",
+      "selectedGroupId": "681111114f9a9b0012345678",
+      "selectedGroupName": "Spring 2026",
+      "groupIds": ["681111114f9a9b0012345678"],
+      "groupNames": ["Spring 2026"],
+      "receiverProductId": "gid://shopify/Product/9001",
+      "action": "UPDATE",
+      "alreadyQueued": false,
+      "blockedReason": null,
+      "linkageConflict": null,
+      "ambiguousMatch": false,
+      "matchedExistingProducts": [],
+      "willCreate": false,
+      "willUpdate": true,
+      "availableFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "status", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+      "selectedFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+      "newFields": [],
+      "overrideFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing", "metafields", "media"],
+      "availableVariants": [],
+      "availableOptions": [],
+      "missingMetafieldDefinitionDetails": [],
+      "missingMetafieldDefinitions": false,
+      "missingMetafieldDefinitionCount": 0,
+      "zeroPriceWarning": false,
+      "taxEnabled": true,
+      "statusOverride": "DRAFT"
+    }
+  ]
 }
 ```
+
+### Preview response notes
+
+* preview now derives missing-definition warnings from live receiver-store metafield definitions
+* `statusOverride` in response reflects resolved default when caller passes `DEFAULT` or omits it
+* zero-price warning uses same adjusted pricing logic as sync execution
+* `availableFields` now reflects fields actually present on the sender product, while `selectedFields` reflects the subset currently chosen
+* when `selectAll` exceeds 1,000 results, preview returns the first 1,000 in current sort order with `capApplied: true`
 
 ### Create Sync Jobs
 
@@ -2983,6 +3294,10 @@ Uses the same filter/selection fields as preview plus:
   }
 }
 ```
+
+If `selectAll` resolves above 1,000 products, sync proceeds with the same capped first-1,000 selection returned by preview.
+
+If preview blockers are present, sync returns HTTP `409` with the same full preview payload shape returned by `POST product-sharing/preview`.
 
 ### Sync success response
 
@@ -3019,10 +3334,21 @@ Retries only the failed items from failed jobs by creating new pending jobs and 
 ### Retry body
 
 ```json
+{}
+```
+
+Optional:
+
+```json
 {
   "jobIds": ["681111114f9a9b0012345701", "681111114f9a9b0012345702"]
 }
 ```
+
+Rules:
+
+* empty body retries all currently failed jobs for the receiver org
+* if `jobIds` are provided, only those failed jobs are retried
 
 ### Retry success response
 
@@ -3042,10 +3368,21 @@ Marks failed jobs as `CANCELLED`.
 ### Dismiss body
 
 ```json
+{}
+```
+
+Optional:
+
+```json
 {
   "jobIds": ["681111114f9a9b0012345701", "681111114f9a9b0012345702"]
 }
 ```
+
+Rules:
+
+* empty body dismisses all currently failed jobs for the receiver org
+* if `jobIds` are provided, only those failed jobs are dismissed
 
 ### Dismiss success response
 
@@ -3053,6 +3390,32 @@ Marks failed jobs as `CANCELLED`.
 {
   "modifiedCount": 2,
   "cancelledAt": "2026-05-30T00:00:00.000Z"
+}
+```
+
+### Sync Status
+
+**Method:** `GET`  
+**Route:** `product-sharing/sync/status`
+
+Returns receiver-side sync banner aggregates for currently active and failed sync jobs.
+
+### Sync status success response
+
+```json
+{
+  "active": {
+    "jobCount": 2,
+    "itemCount": 31,
+    "importCount": 25,
+    "updateCount": 6
+  },
+  "failed": {
+    "jobCount": 1,
+    "itemCount": 4,
+    "importCount": 0,
+    "updateCount": 4
+  }
 }
 ```
 
@@ -3092,7 +3455,7 @@ Returns immutable 90-day product-level history rows for sender or receiver views
       "senderProductId": "gid://shopify/Product/1001",
       "receiverProductId": "gid://shopify/Product/9001",
       "senderChecksum": "abc123",
-      "importedFields": ["title", "descriptionHtml", "variants", "metafields", "media"],
+      "importedFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing", "metafields", "media"],
       "variantDetails": [
         {
           "senderVariantId": "gid://shopify/ProductVariant/3001",
@@ -3112,7 +3475,7 @@ Returns immutable 90-day product-level history rows for sender or receiver views
 **Method:** `POST`  
 **Route:** `product-sharing/invite/group`
 
-Sends a styled email containing a group key and instructions. No invite lifecycle records are created.
+Sends a styled email containing a group key, install/open instructions, and a CTA link to the app. No invite lifecycle records are created.
 
 ### Invite group body
 
@@ -3128,7 +3491,7 @@ Sends a styled email containing a group key and instructions. No invite lifecycl
 **Method:** `POST`  
 **Route:** `product-sharing/invite/store`
 
-Sends a styled email containing the receiver store key and instructions. No invite lifecycle records are created.
+Sends a styled email containing the receiver store key, install/open instructions, and a CTA link to the app. No invite lifecycle records are created.
 
 ### Invite store body
 
@@ -3143,6 +3506,7 @@ Sends a styled email containing the receiver store key and instructions. No invi
 * invite emails are rate-limited to 40 per hour per org
 * each destination email is rate-limited to 5 sends per day per org
 * when rate-limited, endpoint returns HTTP `429` with `"Please try again later."`
+* when email delivery or app-link configuration is unavailable, endpoint returns HTTP `500` with `"Unable to send invite email"`
 
 ### Invite success response
 
