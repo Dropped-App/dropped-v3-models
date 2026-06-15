@@ -4,7 +4,7 @@ import { ObjectIdSchema } from "./ObjectId";
 import {
   ProductSharingDefaultProductStatusSchema,
 } from "./settings/productSharing";
-import { ProductSharingSyncFieldSchema } from "./ProductSharingApi";
+import { ProductSharingSyncFieldSchema } from "./ProductSharingSyncField";
 
 export const ProductSharingSyncJobCollection = "productSharingSyncJobs";
 

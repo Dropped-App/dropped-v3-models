@@ -280,6 +280,8 @@ Updates authenticated organisation fields and settings used by this backend.
       "receiverDefaults": {
         "defaultImportProductStatus": "DRAFT",
         "defaultUpdateProductStatus": "KEEP_EXISTING",
+        "defaultImportSelectedFields": ["title", "descriptionHtml", "variants", "pricing"],
+        "defaultUpdateSelectedFields": ["title", "descriptionHtml", "pricing", "metafields"],
         "taxEnabledByDefault": true
       },
       "pricing": {
@@ -337,6 +339,8 @@ Representative response excerpt:
       "receiverDefaults": {
         "defaultImportProductStatus": "DRAFT",
         "defaultUpdateProductStatus": "KEEP_EXISTING",
+        "defaultImportSelectedFields": ["title", "descriptionHtml", "variants", "pricing"],
+        "defaultUpdateSelectedFields": ["title", "descriptionHtml", "pricing", "metafields"],
         "taxEnabledByDefault": true
       },
       "pricing": {
@@ -397,6 +401,8 @@ Returns resolved product-sharing settings for the authenticated org.
     "receiverDefaults": {
       "defaultImportProductStatus": "DRAFT",
       "defaultUpdateProductStatus": "KEEP_EXISTING",
+      "defaultImportSelectedFields": ["title", "descriptionHtml", "variants", "pricing"],
+      "defaultUpdateSelectedFields": ["title", "descriptionHtml", "pricing", "metafields"],
       "taxEnabledByDefault": true
     },
     "pricing": {
@@ -444,6 +450,8 @@ Replaces the org-scoped `settings.productSharing` object, then schedules downstr
     "receiverDefaults": {
       "defaultImportProductStatus": "DRAFT",
       "defaultUpdateProductStatus": "KEEP_EXISTING",
+      "defaultImportSelectedFields": ["title", "descriptionHtml", "variants", "pricing"],
+      "defaultUpdateSelectedFields": ["title", "descriptionHtml", "pricing", "metafields"],
       "taxEnabledByDefault": true
     },
     "pricing": {
@@ -484,6 +492,8 @@ Replaces the org-scoped `settings.productSharing` object, then schedules downstr
     "receiverDefaults": {
       "defaultImportProductStatus": "DRAFT",
       "defaultUpdateProductStatus": "KEEP_EXISTING",
+      "defaultImportSelectedFields": ["title", "descriptionHtml", "variants", "pricing"],
+      "defaultUpdateSelectedFields": ["title", "descriptionHtml", "pricing", "metafields"],
       "taxEnabledByDefault": true
     },
     "pricing": {

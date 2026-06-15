@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ProductSharingSyncFieldListSchema } from "../ProductSharingSyncField";
+
 import {
   createSettingsConverter,
   NullableBoolean,
@@ -53,6 +55,8 @@ export type ProductSharingSenderDefaults = z.infer<typeof ProductSharingSenderDe
 export const ProductSharingReceiverDefaultsSchema = z.object({
   defaultImportProductStatus: ProductSharingDefaultProductStatusSchema,
   defaultUpdateProductStatus: ProductSharingDefaultProductStatusSchema,
+  defaultImportSelectedFields: ProductSharingSyncFieldListSchema.optional().nullable(),
+  defaultUpdateSelectedFields: ProductSharingSyncFieldListSchema.optional().nullable(),
   taxEnabledByDefault: NullableBoolean,
 });
 
@@ -97,7 +101,7 @@ export const ProductSharingSettingsSchema = z
       .nullable(),
   })
   .describe(
-    "Product sharing sender and receiver defaults, pricing behavior, matching preferences, and metafield prompt suppressions stored at organisation scope.",
+    "Product sharing sender and receiver defaults, including default sync field selections, pricing behavior, matching preferences, and metafield prompt suppressions stored at organisation scope.",
   );
 
 export type ProductSharingSettings = z.infer<typeof ProductSharingSettingsSchema>;

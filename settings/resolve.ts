@@ -1,4 +1,5 @@
 import { type Settings } from "../OrganisationSettings";
+import { DEFAULT_PRODUCT_SHARING_SYNC_FIELDS } from "../ProductSharingSyncField";
 import {
   type ProductSharingMetafieldPromptSuppression,
   type ProductSharingSettings,
@@ -23,6 +24,14 @@ function resolveProductSharingSettings(
         settings?.receiverDefaults?.defaultImportProductStatus ?? "DRAFT",
       defaultUpdateProductStatus:
         settings?.receiverDefaults?.defaultUpdateProductStatus ?? "KEEP_EXISTING",
+      defaultImportSelectedFields:
+        settings?.receiverDefaults?.defaultImportSelectedFields?.length
+          ? [...settings.receiverDefaults.defaultImportSelectedFields]
+          : [...DEFAULT_PRODUCT_SHARING_SYNC_FIELDS],
+      defaultUpdateSelectedFields:
+        settings?.receiverDefaults?.defaultUpdateSelectedFields?.length
+          ? [...settings.receiverDefaults.defaultUpdateSelectedFields]
+          : [...DEFAULT_PRODUCT_SHARING_SYNC_FIELDS],
       taxEnabledByDefault: settings?.receiverDefaults?.taxEnabledByDefault ?? true,
     },
     pricing: {

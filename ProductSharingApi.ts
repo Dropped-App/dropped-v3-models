@@ -5,6 +5,10 @@ import {
   ProductSharingPriceModifierSchema,
   ProductSharingSettingsSchema,
 } from "./settings/productSharing";
+import {
+  ProductSharingSyncFieldListSchema,
+  ProductSharingSyncFieldSchema,
+} from "./ProductSharingSyncField";
 import { parseJsonBody } from "./apiParsing";
 import {
   ProductSharingConnectionSourceSchema,
@@ -16,29 +20,12 @@ import {
 } from "./ProductSharingHistoryEvent";
 import { ProductSharingSnapshotCollectionSchema } from "./ProductSharingSenderSnapshot";
 
-export const ProductSharingSyncFieldSchema = z.enum([
-  "title",
-  "descriptionHtml",
-  "vendor",
-  "productType",
-  "tags",
-  "status",
-  "seo",
-  "variants",
-  "pricing",
-  "compareAtPricing",
-  "metafields",
-  "media",
-]);
 export const ProductSharingBrowseStatusSchema = z.enum([
   "NOT_IMPORTED",
   "IMPORTED",
   "UPDATE_AVAILABLE",
   "ACCESS_REMOVED",
 ]);
-export const ProductSharingSyncFieldListSchema = z
-  .array(ProductSharingSyncFieldSchema)
-  .max(12);
 
 export const ProductSharingGroupModelSchema = z.object({
   id: z.string().min(1),
