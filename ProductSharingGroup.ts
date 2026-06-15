@@ -15,6 +15,7 @@ export const ProductSharingGroupEntitySchema = z.object({
   org: ObjectIdSchema,
   name: z.string().min(1).max(120),
   key: z.string().min(1),
+  shareActiveProductsOnly: z.boolean().optional().nullable(),
   includeRules: ProductSharingGroupRuleSetSchema.optional().nullable(),
   excludeRules: ProductSharingGroupRuleSetSchema.optional().nullable(),
   priceModifier: ProductSharingPriceModifierSchema.optional().nullable(),

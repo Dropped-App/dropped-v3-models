@@ -18,7 +18,13 @@ import {
   ProductSharingHistoryStatusSchema,
   ProductSharingHistoryVariantDetailSchema,
 } from "./ProductSharingHistoryEvent";
-import { ProductSharingSnapshotCollectionSchema } from "./ProductSharingSenderSnapshot";
+import {
+  ProductSharingSnapshotCollectionSchema,
+  ProductSharingSnapshotMediaSchema,
+  ProductSharingSnapshotMetafieldValueSchema,
+  ProductSharingSnapshotOptionSchema,
+  ProductSharingSnapshotPriceRangeSchema,
+} from "./ProductSharingSenderSnapshot";
 
 export const ProductSharingBrowseStatusSchema = z.enum([
   "NOT_IMPORTED",
@@ -27,12 +33,37 @@ export const ProductSharingBrowseStatusSchema = z.enum([
   "ACCESS_REMOVED",
 ]);
 
+const ProductSharingBooleanQueryParamSchema = z.preprocess((value) => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+
+    if (normalized === "true") {
+      return true;
+    }
+
+    if (normalized === "false") {
+      return false;
+    }
+  }
+
+  return value;
+}, z.boolean());
+
 export const ProductSharingGroupModelSchema = z.object({
   id: z.string().min(1),
   org: z.string().min(1),
   name: z.string().min(1).max(120),
   key: z.string().min(1),
   memberCount: z.number().int().min(0).optional(),
+  shareActiveProductsOnly: z.boolean().optional().nullable(),
   includeRules: z
     .object({
       productIds: z.array(z.string().min(1)).optional().nullable(),
@@ -185,6 +216,24 @@ export type ProductSharingBlockSenderResponse = z.infer<
   typeof ProductSharingBlockSenderResponseSchema
 >;
 
+const ProductSharingBrowseVariantSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  sku: z.string().optional().nullable(),
+  barcode: z.string().optional().nullable(),
+  price: z.number().optional().nullable(),
+  compareAtPrice: z.number().optional().nullable(),
+  taxable: z.boolean(),
+  position: z.number().int().positive(),
+  selectedOptions: z.array(
+    z.object({
+      name: z.string().min(1),
+      value: z.string().min(1),
+    }),
+  ),
+  metafields: z.array(ProductSharingSnapshotMetafieldValueSchema).max(500),
+});
+
 export const ProductSharingBrowseProductSchema = z.object({
   senderOrgId: z.string().min(1),
   senderName: z.string().optional().nullable(),
@@ -205,6 +254,25 @@ export const ProductSharingBrowseProductSchema = z.object({
   selectedGroupId: z.string().min(1),
   selectedGroupName: z.string().optional().nullable(),
   receiverProductId: z.string().optional().nullable(),
+  availableFields: ProductSharingSyncFieldListSchema,
+  visibleFields: ProductSharingSyncFieldListSchema,
+  product: z.object({
+    handle: z.string().optional().nullable(),
+    title: z.string().optional().nullable(),
+    descriptionHtml: z.string().optional().nullable(),
+    seoTitle: z.string().optional().nullable(),
+    seoDescription: z.string().optional().nullable(),
+    vendor: z.string().optional().nullable(),
+    productType: z.string().optional().nullable(),
+    status: z.string().optional().nullable(),
+    tags: z.array(z.string()).optional().nullable(),
+    collections: z.array(ProductSharingSnapshotCollectionSchema).optional().nullable(),
+    media: z.array(ProductSharingSnapshotMediaSchema).optional().nullable(),
+    options: z.array(ProductSharingSnapshotOptionSchema).optional().nullable(),
+    variants: z.array(ProductSharingBrowseVariantSchema).optional().nullable(),
+    priceRange: ProductSharingSnapshotPriceRangeSchema.optional().nullable(),
+    metafields: z.array(ProductSharingSnapshotMetafieldValueSchema).optional().nullable(),
+  }),
 });
 
 export type ProductSharingBrowseProduct = z.infer<
@@ -524,6 +592,7 @@ export const ProductSharingSettingsUpdateBodySchema = z.object({
 
 export const ProductSharingGroupBodySchema = z.object({
   name: z.string().trim().min(1).max(120),
+  shareActiveProductsOnly: z.boolean().optional().nullable(),
   includeProductIds: z.array(z.string().min(1)).max(500).optional().nullable(),
   includeCollectionIds: z.array(z.string().min(1)).max(500).optional().nullable(),
   excludeProductIds: z.array(z.string().min(1)).max(500).optional().nullable(),
@@ -534,6 +603,7 @@ export const ProductSharingGroupBodySchema = z.object({
 export const ProductSharingGroupUpdateBodySchema = z
   .object({
     name: z.string().trim().min(1).max(120).optional(),
+    shareActiveProductsOnly: z.boolean().optional().nullable(),
     includeProductIds: z.array(z.string().min(1)).max(500).optional().nullable(),
     includeCollectionIds: z.array(z.string().min(1)).max(500).optional().nullable(),
     excludeProductIds: z.array(z.string().min(1)).max(500).optional().nullable(),
@@ -666,7 +736,7 @@ export const ProductSharingBrowseQuerySchema = z.object({
   productType: z.string().max(120).optional().nullable(),
   tag: z.string().max(120).optional().nullable(),
   status: ProductSharingBrowseStatusSchema.optional().nullable(),
-  updatedSinceLastImport: z.coerce.boolean().optional().nullable(),
+  updatedSinceLastImport: ProductSharingBooleanQueryParamSchema.optional().nullable(),
   collectionId: z.string().max(250).optional().nullable(),
   search: z.string().max(250).optional().nullable(),
   sort: z
