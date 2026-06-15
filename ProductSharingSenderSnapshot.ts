@@ -49,6 +49,11 @@ export const ProductSharingSnapshotMediaSchema = z.object({
   sourceUrl: z.string().min(1),
 });
 
+export const ProductSharingSnapshotCollectionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+});
+
 export const ProductSharingSenderSnapshotEntitySchema = z.object({
   _id: ObjectIdSchema,
   org: ObjectIdSchema,
@@ -62,7 +67,7 @@ export const ProductSharingSenderSnapshotEntitySchema = z.object({
   productType: z.string().optional().nullable(),
   status: z.string().optional().nullable(),
   tags: z.array(z.string()).max(500),
-  collectionIds: z.array(z.string().min(1)).max(500),
+  collections: z.array(ProductSharingSnapshotCollectionSchema).max(500),
   media: z.array(ProductSharingSnapshotMediaSchema).max(250),
   options: z.array(ProductSharingSnapshotOptionSchema).max(20),
   variants: z.array(ProductSharingSnapshotVariantSchema).max(250),

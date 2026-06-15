@@ -14,6 +14,7 @@ import {
   ProductSharingHistoryStatusSchema,
   ProductSharingHistoryVariantDetailSchema,
 } from "./ProductSharingHistoryEvent";
+import { ProductSharingSnapshotCollectionSchema } from "./ProductSharingSenderSnapshot";
 
 export const ProductSharingSyncFieldSchema = z.enum([
   "title",
@@ -92,7 +93,7 @@ export const ProductSharingSenderGroupPreviewProductSchema = z.object({
   vendor: z.string().optional().nullable(),
   productType: z.string().optional().nullable(),
   sourceStatus: z.string().optional().nullable(),
-  collectionIds: z.array(z.string().min(1)),
+  collections: z.array(ProductSharingSnapshotCollectionSchema),
   tags: z.array(z.string()),
   adjustedPrice: z.number().optional().nullable(),
   sourceUpdatedAt: z.date(),
@@ -206,7 +207,7 @@ export const ProductSharingBrowseProductSchema = z.object({
   sourceStatus: z.string().optional().nullable(),
   status: ProductSharingBrowseStatusSchema,
   tags: z.array(z.string()),
-  collectionIds: z.array(z.string().min(1)),
+  collections: z.array(ProductSharingSnapshotCollectionSchema),
   checksum: z.string().min(1),
   sourceUpdatedAt: z.date(),
   importedAt: z.date().optional().nullable(),
@@ -231,6 +232,35 @@ export const ProductSharingBrowseResponseSchema = z.object({
 
 export type ProductSharingBrowseResponse = z.infer<
   typeof ProductSharingBrowseResponseSchema
+>;
+
+const ProductSharingNamedFilterOptionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+});
+
+export const ProductSharingBrowseFilterOptionsResponseSchema = z.object({
+  groups: z.array(ProductSharingNamedFilterOptionSchema),
+  senders: z.array(ProductSharingNamedFilterOptionSchema),
+  vendors: z.array(z.string().min(1)),
+  productTypes: z.array(z.string().min(1)),
+  tags: z.array(z.string().min(1)),
+  collections: z.array(ProductSharingSnapshotCollectionSchema),
+});
+
+export type ProductSharingBrowseFilterOptionsResponse = z.infer<
+  typeof ProductSharingBrowseFilterOptionsResponseSchema
+>;
+
+export const ProductSharingGroupFilterOptionsResponseSchema = z.object({
+  vendors: z.array(z.string().min(1)),
+  productTypes: z.array(z.string().min(1)),
+  tags: z.array(z.string().min(1)),
+  collections: z.array(ProductSharingSnapshotCollectionSchema),
+});
+
+export type ProductSharingGroupFilterOptionsResponse = z.infer<
+  typeof ProductSharingGroupFilterOptionsResponseSchema
 >;
 
 export const ProductSharingPreviewMatchedExistingProductSchema = z.object({

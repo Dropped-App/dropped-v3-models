@@ -735,6 +735,8 @@ Creates one product-sharing group for the authenticated org.
 
 Returns one product-sharing group plus connected receivers and paginated preview products for that group.
 
+Each preview product now returns `collections` as objects with both collection `id` and `name`.
+
 ### Query parameters
 
 * `shop: string` (required)
@@ -797,7 +799,12 @@ Returns one product-sharing group plus connected receivers and paginated preview
       "vendor": "Acme",
       "productType": "Accessory",
       "sourceStatus": "ACTIVE",
-      "collectionIds": ["gid://shopify/Collection/2001"],
+      "collections": [
+        {
+          "id": "gid://shopify/Collection/2001",
+          "name": "Spring Collection"
+        }
+      ],
       "tags": ["spring"],
       "adjustedPrice": 22.5,
       "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
@@ -807,6 +814,45 @@ Returns one product-sharing group plus connected receivers and paginated preview
   ]
 }
 ```
+
+\---
+
+## Get Product Sharing Group Filter Options
+
+**Method:** `GET`  
+**Route:** `product-sharing/groups/{id}/filters`
+
+Returns filter options derived from products currently included in one sender-owned group.
+
+### Query parameters
+
+* `shop: string` (required)
+* standard Shopify HMAC query params for verification
+
+### Path parameters
+
+* `id: string` (required, must be a valid ObjectId)
+
+### Success response
+
+```json
+{
+  "vendors": ["Acme"],
+  "productTypes": ["Accessory"],
+  "tags": ["spring", "summer"],
+  "collections": [
+    {
+      "id": "gid://shopify/Collection/2001",
+      "name": "Spring Collection"
+    }
+  ]
+}
+```
+
+### Notes
+
+* unlike receiver product filters, this route does not include connected groups or connected senders
+* options only reflect products currently included in this group after group rules are applied
 
 \---
 
@@ -1499,6 +1545,8 @@ Returns aggregate counts for active and failed sync jobs visible to the authenti
 
 Returns paginated accessible sender products for the authenticated receiver org.
 
+Each product now returns `collections` as objects with both collection `id` and `name`.
+
 ### Query parameters
 
 * `shop: string` (required)
@@ -1535,7 +1583,12 @@ Returns paginated accessible sender products for the authenticated receiver org.
       "sourceStatus": "ACTIVE",
       "status": "UPDATE_AVAILABLE",
       "tags": ["spring"],
-      "collectionIds": ["gid://shopify/Collection/2001"],
+      "collections": [
+        {
+          "id": "gid://shopify/Collection/2001",
+          "name": "Spring Collection"
+        }
+      ],
       "checksum": "abc123",
       "sourceUpdatedAt": "2026-05-30T00:00:00.000Z",
       "importedAt": "2026-05-29T00:00:00.000Z",
@@ -1549,6 +1602,54 @@ Returns paginated accessible sender products for the authenticated receiver org.
   ]
 }
 ```
+
+\---
+
+## Get Product Sharing Product Filter Options
+
+**Method:** `GET`  
+**Route:** `product-sharing/products/filters`
+
+Returns receiver-visible filter options derived from all accessible sender products.
+
+### Query parameters
+
+* `shop: string` (required)
+* standard Shopify HMAC query params for verification
+
+### Success response
+
+```json
+{
+  "groups": [
+    {
+      "id": "681111114f9a9b0012345678",
+      "name": "Spring 2026"
+    }
+  ],
+  "senders": [
+    {
+      "id": "681111114f9a9b0012345670",
+      "name": "Sender Store"
+    }
+  ],
+  "vendors": ["Acme"],
+  "productTypes": ["Accessory"],
+  "tags": ["spring", "summer"],
+  "collections": [
+    {
+      "id": "gid://shopify/Collection/2001",
+      "name": "Spring Collection"
+    }
+  ]
+}
+```
+
+### Notes
+
+* `groups` lists connected sender groups visible to current receiver
+* `senders` lists connected sender orgs visible to current receiver
+* options reflect all accessible products, not current query-filtered subset
 
 \---
 
