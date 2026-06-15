@@ -32,6 +32,7 @@ export const ProductSharingGroupModelSchema = z.object({
   org: z.string().min(1),
   name: z.string().min(1).max(120),
   key: z.string().min(1),
+  memberCount: z.number().int().min(0).optional(),
   includeRules: z
     .object({
       productIds: z.array(z.string().min(1)).optional().nullable(),

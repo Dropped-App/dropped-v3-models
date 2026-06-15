@@ -657,6 +657,7 @@ Returns all product-sharing groups owned by the authenticated org.
       "id": "681111114f9a9b0012345678",
       "org": "665f0d3f4f9a9b0099999999",
       "name": "Spring 2026",
+      "memberCount": 2,
       "key": "group_ABC123DEF456",
       "includeRules": {
         "productIds": ["gid://shopify/Product/1001"],
