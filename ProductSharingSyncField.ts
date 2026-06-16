@@ -14,7 +14,11 @@ export const PRODUCT_SHARING_SYNC_FIELDS = [
   "media",
 ] as const;
 
-export const ProductSharingSyncFieldSchema = z.enum(PRODUCT_SHARING_SYNC_FIELDS);
+export const ProductSharingSyncFieldSchema = z
+  .enum(PRODUCT_SHARING_SYNC_FIELDS)
+  .describe(
+    "Product fields a receiver can choose to import or update. Product status is managed separately through statusOverride and is not a selectable sync field.",
+  );
 export const ProductSharingSyncFieldListSchema = z
   .array(ProductSharingSyncFieldSchema)
   .max(PRODUCT_SHARING_SYNC_FIELDS.length);

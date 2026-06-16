@@ -7,7 +7,10 @@ export const ProductSharingSenderSnapshotCollection = "productSharingSenderSnaps
 export const ProductSharingSnapshotPriceRangeSchema = z.object({
   min: z.number(),
   max: z.number(),
-  currencyCode: z.string().min(1),
+  currencyCode: z
+    .string()
+    .min(1)
+    .describe("Currency captured from the sender store snapshot payload."),
 });
 
 export const ProductSharingSnapshotMetafieldValueSchema = z.object({

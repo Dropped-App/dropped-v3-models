@@ -63,7 +63,13 @@ export const ProductSharingGroupModelSchema = z.object({
   name: z.string().min(1).max(120),
   key: z.string().min(1),
   memberCount: z.number().int().min(0).optional(),
-  shareActiveProductsOnly: z.boolean().optional().nullable(),
+  shareActiveProductsOnly: z
+    .boolean()
+    .optional()
+    .nullable()
+    .describe(
+      "Optional group-level active-only override applied on top of the sender org defaults when determining group-visible products.",
+    ),
   includeRules: z
     .object({
       productIds: z.array(z.string().min(1)).optional().nullable(),
@@ -114,10 +120,18 @@ export const ProductSharingSenderGroupPreviewProductSchema = z.object({
   sourceStatus: z.string().optional().nullable(),
   collections: z.array(ProductSharingSnapshotCollectionSchema),
   tags: z.array(z.string()),
-  adjustedPrice: z.number().optional().nullable(),
+  adjustedPrice: z
+    .number()
+    .optional()
+    .nullable()
+    .describe(
+      "Receiver-visible adjusted price for the selected group, or null when pricing is not available in the receiver store currency.",
+    ),
   sourceUpdatedAt: z.date(),
   checksum: z.string().min(1),
-  availableFields: ProductSharingSyncFieldListSchema,
+  availableFields: ProductSharingSyncFieldListSchema.describe(
+    "Sync fields currently available for this sender product after active-only eligibility, field mapping, and pricing availability are applied.",
+  ),
 });
 
 export type ProductSharingSenderGroupPreviewProduct = z.infer<
@@ -248,14 +262,24 @@ export const ProductSharingBrowseProductSchema = z.object({
   checksum: z.string().min(1),
   sourceUpdatedAt: z.date(),
   importedAt: z.date().optional().nullable(),
-  adjustedPrice: z.number().optional().nullable(),
+  adjustedPrice: z
+    .number()
+    .optional()
+    .nullable()
+    .describe(
+      "Receiver-visible adjusted price for the selected group, or null when sender market pricing is unavailable in the receiver store currency.",
+    ),
   groupIds: z.array(z.string().min(1)),
   groupNames: z.array(z.string()),
   selectedGroupId: z.string().min(1),
   selectedGroupName: z.string().optional().nullable(),
   receiverProductId: z.string().optional().nullable(),
-  availableFields: ProductSharingSyncFieldListSchema,
-  visibleFields: ProductSharingSyncFieldListSchema,
+  availableFields: ProductSharingSyncFieldListSchema.describe(
+    "Fields the receiver may sync for this product after pricing availability and payload availability are evaluated.",
+  ),
+  visibleFields: ProductSharingSyncFieldListSchema.describe(
+    "Subset of availableFields exposed in this browse payload after applying the receiver org default field mapping choices.",
+  ),
   product: z.object({
     handle: z.string().optional().nullable(),
     title: z.string().optional().nullable(),
@@ -270,9 +294,16 @@ export const ProductSharingBrowseProductSchema = z.object({
     media: z.array(ProductSharingSnapshotMediaSchema).optional().nullable(),
     options: z.array(ProductSharingSnapshotOptionSchema).optional().nullable(),
     variants: z.array(ProductSharingBrowseVariantSchema).optional().nullable(),
-    priceRange: ProductSharingSnapshotPriceRangeSchema.optional().nullable(),
+    priceRange: ProductSharingSnapshotPriceRangeSchema
+      .optional()
+      .nullable()
+      .describe(
+        "Resolved sender-market price range in the receiver store currency when available; otherwise null.",
+      ),
     metafields: z.array(ProductSharingSnapshotMetafieldValueSchema).optional().nullable(),
-  }),
+  }).describe(
+    "Receiver-visible product payload. Fields not selected in the receiver org mapping defaults are returned as null or omitted from visibleFields.",
+  ),
 });
 
 export type ProductSharingBrowseProduct = z.infer<
@@ -404,7 +435,13 @@ export const ProductSharingPreviewProductSchema = z.object({
   productType: z.string().optional().nullable(),
   sourceStatus: z.string().optional().nullable(),
   status: ProductSharingBrowseStatusSchema,
-  adjustedPrice: z.number().optional().nullable(),
+  adjustedPrice: z
+    .number()
+    .optional()
+    .nullable()
+    .describe(
+      "Receiver-visible adjusted price for preview, or null when sender market pricing is unavailable in the receiver store currency.",
+    ),
   sourceUpdatedAt: z.date(),
   importedAt: z.date().optional().nullable(),
   selectedGroupId: z.string().min(1),
@@ -420,8 +457,12 @@ export const ProductSharingPreviewProductSchema = z.object({
   matchedExistingProducts: z.array(ProductSharingPreviewMatchedExistingProductSchema),
   willCreate: z.boolean(),
   willUpdate: z.boolean(),
-  availableFields: ProductSharingSyncFieldListSchema,
-  selectedFields: ProductSharingSyncFieldListSchema,
+  availableFields: ProductSharingSyncFieldListSchema.describe(
+    "Fields currently available to sync after pricing availability and snapshot payload availability are evaluated.",
+  ),
+  selectedFields: ProductSharingSyncFieldListSchema.describe(
+    "Selected sync fields after removing anything unavailable for the current product.",
+  ),
   newFields: ProductSharingSyncFieldListSchema,
   overrideFields: ProductSharingSyncFieldListSchema,
   availableVariants: z.array(ProductSharingPreviewVariantSchema),

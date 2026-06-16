@@ -47,7 +47,9 @@ export const ProductSharingRoundingRuleSchema = z.object({
 export type ProductSharingRoundingRule = z.infer<typeof ProductSharingRoundingRuleSchema>;
 
 export const ProductSharingSenderDefaultsSchema = z.object({
-  shareActiveProductsOnly: NullableBoolean,
+  shareActiveProductsOnly: NullableBoolean.describe(
+    "When true, sender snapshots and receiver-facing product results only include products that are active unless a more permissive eligible group still allows the product.",
+  ),
 });
 
 export type ProductSharingSenderDefaults = z.infer<typeof ProductSharingSenderDefaultsSchema>;
@@ -101,7 +103,7 @@ export const ProductSharingSettingsSchema = z
       .nullable(),
   })
   .describe(
-    "Product sharing sender and receiver defaults, including default sync field selections, pricing behavior, matching preferences, and metafield prompt suppressions stored at organisation scope.",
+    "Product sharing sender and receiver defaults, including active-only sender filtering, default sync field selections, pricing behavior, matching preferences, and metafield prompt suppressions stored at organisation scope.",
   );
 
 export type ProductSharingSettings = z.infer<typeof ProductSharingSettingsSchema>;
