@@ -6,7 +6,6 @@ export const PRODUCT_SHARING_SYNC_FIELDS = [
   "vendor",
   "productType",
   "tags",
-  "status",
   "seo",
   "variants",
   "pricing",
