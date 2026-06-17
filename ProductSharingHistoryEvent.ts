@@ -23,6 +23,7 @@ export const ProductSharingHistoryEventEntitySchema = z.object({
   importedFields: z.array(z.string().min(1)).max(200),
   variantDetails: z.array(ProductSharingHistoryVariantDetailSchema).max(500),
   status: ProductSharingHistoryStatusSchema,
+  error: z.string().optional().nullable(),
   happenedAt: z.date(),
   expiresAt: z.date(),
   createdAt: z.date(),

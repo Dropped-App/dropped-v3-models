@@ -1736,6 +1736,8 @@ Empty object dismisses all failed jobs. Optional targeted dismiss:
 
 Returns paginated immutable product-sharing history rows for sender or receiver views.
 
+Each history item now includes optional `error` text for failed or skipped sync attempts when a reason was recorded.
+
 ### Query parameters
 
 * `shop: string` (required)
@@ -1776,6 +1778,7 @@ Returns paginated immutable product-sharing history rows for sender or receiver 
         }
       ],
       "status": "FAILED",
+      "error": "Sender snapshot not found",
       "happenedAt": "2026-05-30T00:00:00.000Z"
     }
   ]
