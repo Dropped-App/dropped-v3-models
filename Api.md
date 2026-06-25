@@ -1380,6 +1380,7 @@ Builds a full product-sharing preview for the authenticated receiver org without
       "groupIds": ["681111114f9a9b0012345678"],
       "groupNames": ["Spring 2026"],
       "receiverProductId": "gid://shopify/Product/9001",
+      "receiverProductTitle": "Widget Existing",
       "action": "UPDATE",
       "alreadyQueued": false,
       "blockedReason": null,
@@ -1440,6 +1441,10 @@ Builds a full product-sharing preview for the authenticated receiver org without
   "sample": []
 }
 ```
+
+### Response notes
+
+* `receiverProductTitle` is returned when preview resolves a unique matched receiver product; it is `null` when no match was used or when the row is driven by an existing linkage instead of a fresh match
 
 ### Notes
 
@@ -1507,7 +1512,7 @@ Same shape as preview, plus `createMissingMetafieldDefinitions`:
 
 ### Conflict response
 
-When blockers exist, route returns HTTP `409` with the same full preview payload returned by `POST product-sharing/preview`.
+When blockers exist, route returns HTTP `409` with the same full preview payload returned by `POST product-sharing/preview`, including `receiverProductTitle` when a unique matched receiver product was resolved.
 
 ### Notes
 
