@@ -18,6 +18,7 @@ export const ProductSharingHistoryEventEntitySchema = z.object({
   receiverOrg: ObjectIdSchema,
   group: ObjectIdSchema,
   senderProductId: z.string().min(1),
+  productTitle: z.string().min(1).optional().nullable(),
   receiverProductId: z.string().optional().nullable(),
   senderChecksum: z.string().optional().nullable(),
   importedFields: z.array(z.string().min(1)).max(200),

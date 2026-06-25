@@ -25,6 +25,7 @@ export const ProductSharingSyncItemStatusSchema = z.enum([
 
 export const ProductSharingSyncJobItemSchema = z.object({
   senderProductId: z.string().min(1),
+  productTitle: z.string().min(1).optional().nullable(),
   groupId: z.string().min(1),
   status: ProductSharingSyncItemStatusSchema,
   receiverProductId: z.string().optional().nullable(),

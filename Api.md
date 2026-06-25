@@ -1737,6 +1737,7 @@ Empty object dismisses all failed jobs. Optional targeted dismiss:
 Returns paginated immutable product-sharing history rows for sender or receiver views.
 
 Each history item now includes optional `error` text for failed or skipped sync attempts when a reason was recorded.
+Each history item also includes optional `productTitle` when sender product title was available at queue or execution time.
 
 ### Query parameters
 
@@ -1767,6 +1768,7 @@ Each history item now includes optional `error` text for failed or skipped sync 
       "receiverOrgId": "681111114f9a9b0012345688",
       "groupId": "681111114f9a9b0012345678",
       "senderProductId": "gid://shopify/Product/1001",
+      "productTitle": "Widget",
       "receiverProductId": "gid://shopify/Product/9001",
       "senderChecksum": "abc123",
       "importedFields": ["title", "descriptionHtml", "variants", "pricing", "compareAtPricing"],
