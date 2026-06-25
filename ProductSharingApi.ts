@@ -449,6 +449,7 @@ export const ProductSharingPreviewProductSchema = z.object({
   groupIds: z.array(z.string().min(1)),
   groupNames: z.array(z.string()),
   receiverProductId: z.string().optional().nullable(),
+  receiverProductTitle: z.string().optional().nullable(),
   action: z.enum(["IMPORT", "UPDATE"]),
   alreadyQueued: z.boolean(),
   blockedReason: ProductSharingPreviewBlockedReasonSchema.optional().nullable(),
