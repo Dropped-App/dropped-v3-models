@@ -18,6 +18,7 @@ import {
   ProductSharingHistoryStatusSchema,
   ProductSharingHistoryVariantDetailSchema,
 } from "./ProductSharingHistoryEvent";
+import { ProductSharingSyncJobStatusSchema } from "./ProductSharingSyncJob";
 import {
   ProductSharingSnapshotCollectionSchema,
   ProductSharingSnapshotMediaSchema,
@@ -452,6 +453,10 @@ export const ProductSharingPreviewProductSchema = z.object({
   receiverProductTitle: z.string().optional().nullable(),
   action: z.enum(["IMPORT", "UPDATE"]),
   alreadyQueued: z.boolean(),
+  queuedJobId: z.string().optional().nullable(),
+  queuedJobStatus: ProductSharingSyncJobStatusSchema.extract(["PENDING", "FAILED"])
+    .optional()
+    .nullable(),
   blockedReason: ProductSharingPreviewBlockedReasonSchema.optional().nullable(),
   linkageConflict: ProductSharingPreviewLinkageConflictSchema.optional().nullable(),
   ambiguousMatch: z.boolean(),

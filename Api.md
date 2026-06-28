@@ -1383,6 +1383,8 @@ Builds a full product-sharing preview for the authenticated receiver org without
       "receiverProductTitle": "Widget Existing",
       "action": "UPDATE",
       "alreadyQueued": false,
+      "queuedJobId": null,
+      "queuedJobStatus": null,
       "blockedReason": null,
       "linkageConflict": null,
       "ambiguousMatch": false,
@@ -1445,6 +1447,7 @@ Builds a full product-sharing preview for the authenticated receiver org without
 ### Response notes
 
 * `receiverProductTitle` is returned when preview resolves a unique matched receiver product; it is `null` when no match was used or when the row is driven by an existing linkage instead of a fresh match
+* `queuedJobId` and `queuedJobStatus` are populated when an unfinished sync job is what blocks the row; otherwise both are `null`
 
 ### Notes
 
