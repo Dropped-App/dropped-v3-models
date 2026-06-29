@@ -275,6 +275,10 @@ export const ProductSharingBrowseProductSchema = z.object({
   selectedGroupId: z.string().min(1),
   selectedGroupName: z.string().optional().nullable(),
   receiverProductId: z.string().optional().nullable(),
+  queuedJobId: z.string().optional().nullable(),
+  queuedJobStatus: ProductSharingSyncJobStatusSchema.extract(["PENDING", "FAILED"])
+    .optional()
+    .nullable(),
   availableFields: ProductSharingSyncFieldListSchema.describe(
     "Fields the receiver may sync for this product after pricing availability and payload availability are evaluated.",
   ),

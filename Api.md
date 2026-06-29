@@ -1616,11 +1616,19 @@ Each product now returns `collections` as objects with both collection `id` and 
       "groupNames": ["Spring 2026"],
       "selectedGroupId": "681111114f9a9b0012345678",
       "selectedGroupName": "Spring 2026",
-      "receiverProductId": "gid://shopify/Product/9001"
+      "receiverProductId": "gid://shopify/Product/9001",
+      "queuedJobId": "681111114f9a9b0012345688",
+      "queuedJobStatus": "PENDING"
     }
   ]
 }
 ```
+
+### Notes
+
+* `queuedJobId` and `queuedJobStatus` are populated when the product currently belongs to an unfinished sync job
+* unfinished sync jobs are `PENDING` or `FAILED`
+* these fields are read-only request-time joins and do not change the underlying product catalog records
 
 \---
 
