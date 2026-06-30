@@ -6,6 +6,7 @@ import {
 } from "./settings/productSharing";
 import { createSettingsConverter } from "./settings/shared";
 import { resolveSettings } from "./settings/resolve";
+import { sanitizeSettingsGroups } from "./settings/sanitize";
 
 export const SettingsGroupsSchema = z
   .object({
@@ -21,7 +22,23 @@ export const SettingsResult = SettingsGroupsSchema.optional().nullable().describ
 
 export type Settings = z.infer<typeof SettingsResult>;
 
-export const SettingsConverter = createSettingsConverter(SettingsGroupsSchema);
+const BaseSettingsConverter = createSettingsConverter(SettingsGroupsSchema);
+
+export const SettingsConverter = {
+  parse(input: unknown) {
+    return BaseSettingsConverter.parse(input);
+  },
+  convertFromEntity(input: Settings | null | undefined) {
+    if (input === null || input === undefined) {
+      return null;
+    }
+
+    return BaseSettingsConverter.convertFromEntity(sanitizeSettingsGroups(input));
+  },
+  convertToEntity(input: Settings | null | undefined) {
+    return BaseSettingsConverter.convertToEntity(input);
+  },
+};
 
 export {
   ProductSharingSettingsConverter,

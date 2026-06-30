@@ -4,6 +4,7 @@ import {
   type ProductSharingMetafieldPromptSuppression,
   type ProductSharingSettings,
 } from "./productSharing";
+import { sanitizeSettingsGroups } from "./sanitize";
 
 type ResolvableSettingsInput = {
   productSharing?: ProductSharingSettings | null;
@@ -62,7 +63,9 @@ function resolveProductSharingSettings(
 }
 
 export function resolveSettings(settings?: ResolvableSettingsInput): NonNullable<Settings> {
+  const sanitizedSettings = sanitizeSettingsGroups((settings ?? null) as Settings);
+
   return {
-    productSharing: resolveProductSharingSettings(settings?.productSharing),
+    productSharing: resolveProductSharingSettings(sanitizedSettings?.productSharing),
   };
 }
