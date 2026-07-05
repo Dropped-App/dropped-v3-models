@@ -17,7 +17,7 @@ export const PRODUCT_SHARING_SYNC_FIELDS = [
 export const ProductSharingSyncFieldSchema = z
   .enum(PRODUCT_SHARING_SYNC_FIELDS)
   .describe(
-    "Product fields a receiver can choose to import or update. Product status is managed separately through statusOverride and is not a selectable sync field.",
+    "Product fields sender and receiver product-sharing settings can allow for snapshotting, import, or update. Product status is managed separately and is not a selectable sync field.",
   );
 export const ProductSharingSyncFieldListSchema = z
   .array(ProductSharingSyncFieldSchema)

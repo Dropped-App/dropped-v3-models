@@ -6,7 +6,7 @@ import { type Settings } from "../OrganisationSettings";
 
 const PRODUCT_SHARING_SYNC_FIELD_SET = new Set<string>(PRODUCT_SHARING_SYNC_FIELDS);
 
-function sanitizeProductSharingSyncFieldList(
+export function sanitizeProductSharingSyncFieldList(
   input: unknown,
 ): ProductSharingSyncField[] | null | undefined {
   if (input === null || input === undefined) {
@@ -26,7 +26,7 @@ function sanitizeProductSharingSyncFieldList(
 }
 
 export function sanitizeSettingsGroups(input: Settings): Settings {
-  if (!input?.productSharing?.receiverDefaults) {
+  if (!input?.productSharing?.senderDefaults && !input?.productSharing?.receiverDefaults) {
     return input;
   }
 
@@ -34,15 +34,25 @@ export function sanitizeSettingsGroups(input: Settings): Settings {
     ...input,
     productSharing: {
       ...input.productSharing,
-      receiverDefaults: {
-        ...input.productSharing.receiverDefaults,
-        defaultImportSelectedFields: sanitizeProductSharingSyncFieldList(
-          input.productSharing.receiverDefaults.defaultImportSelectedFields,
-        ),
-        defaultUpdateSelectedFields: sanitizeProductSharingSyncFieldList(
-          input.productSharing.receiverDefaults.defaultUpdateSelectedFields,
-        ),
-      },
+      senderDefaults: input.productSharing.senderDefaults
+        ? {
+            ...input.productSharing.senderDefaults,
+            defaultSelectedFields: sanitizeProductSharingSyncFieldList(
+              input.productSharing.senderDefaults.defaultSelectedFields,
+            ),
+          }
+        : input.productSharing.senderDefaults,
+      receiverDefaults: input.productSharing.receiverDefaults
+        ? {
+            ...input.productSharing.receiverDefaults,
+            defaultImportSelectedFields: sanitizeProductSharingSyncFieldList(
+              input.productSharing.receiverDefaults.defaultImportSelectedFields,
+            ),
+            defaultUpdateSelectedFields: sanitizeProductSharingSyncFieldList(
+              input.productSharing.receiverDefaults.defaultUpdateSelectedFields,
+            ),
+          }
+        : input.productSharing.receiverDefaults,
     },
   };
 }

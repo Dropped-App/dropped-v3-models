@@ -275,7 +275,8 @@ Updates authenticated organisation fields and settings used by this backend.
   "settings": {
     "productSharing": {
       "senderDefaults": {
-        "shareActiveProductsOnly": true
+        "shareActiveProductsOnly": true,
+        "defaultSelectedFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"]
       },
       "receiverDefaults": {
         "defaultImportProductStatus": "DRAFT",
@@ -334,7 +335,8 @@ Representative response excerpt:
   "settings": {
     "productSharing": {
       "senderDefaults": {
-        "shareActiveProductsOnly": true
+        "shareActiveProductsOnly": true,
+        "defaultSelectedFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"]
       },
       "receiverDefaults": {
         "defaultImportProductStatus": "DRAFT",
@@ -396,7 +398,8 @@ Returns resolved product-sharing settings for the authenticated org.
 {
   "productSharing": {
     "senderDefaults": {
-      "shareActiveProductsOnly": true
+      "shareActiveProductsOnly": true,
+      "defaultSelectedFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"]
     },
     "receiverDefaults": {
       "defaultImportProductStatus": "DRAFT",
@@ -445,7 +448,8 @@ Replaces the org-scoped `settings.productSharing` object, then schedules downstr
 {
   "productSharing": {
     "senderDefaults": {
-      "shareActiveProductsOnly": true
+      "shareActiveProductsOnly": true,
+      "defaultSelectedFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"]
     },
     "receiverDefaults": {
       "defaultImportProductStatus": "DRAFT",
@@ -487,7 +491,8 @@ Replaces the org-scoped `settings.productSharing` object, then schedules downstr
 {
   "productSharing": {
     "senderDefaults": {
-      "shareActiveProductsOnly": true
+      "shareActiveProductsOnly": true,
+      "defaultSelectedFields": ["title", "descriptionHtml", "vendor", "productType", "tags", "seo", "variants", "pricing", "compareAtPricing", "metafields", "media"]
     },
     "receiverDefaults": {
       "defaultImportProductStatus": "DRAFT",

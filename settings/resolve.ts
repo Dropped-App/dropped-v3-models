@@ -19,6 +19,10 @@ function resolveProductSharingSettings(
   return {
     senderDefaults: {
       shareActiveProductsOnly: settings?.senderDefaults?.shareActiveProductsOnly ?? true,
+      defaultSelectedFields:
+        settings?.senderDefaults?.defaultSelectedFields?.length
+          ? [...settings.senderDefaults.defaultSelectedFields]
+          : [...DEFAULT_PRODUCT_SHARING_SYNC_FIELDS],
     },
     receiverDefaults: {
       defaultImportProductStatus:

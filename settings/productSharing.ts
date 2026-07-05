@@ -50,6 +50,7 @@ export const ProductSharingSenderDefaultsSchema = z.object({
   shareActiveProductsOnly: NullableBoolean.describe(
     "When true, sender snapshots and receiver-facing product results only include products that are active unless a more permissive eligible group still allows the product.",
   ),
+  defaultSelectedFields: ProductSharingSyncFieldListSchema.optional().nullable(),
 });
 
 export type ProductSharingSenderDefaults = z.infer<typeof ProductSharingSenderDefaultsSchema>;
@@ -103,7 +104,7 @@ export const ProductSharingSettingsSchema = z
       .nullable(),
   })
   .describe(
-    "Product sharing sender and receiver defaults, including active-only sender filtering, default sync field selections, pricing behavior, matching preferences, and metafield prompt suppressions stored at organisation scope.",
+    "Product sharing sender and receiver defaults, including active-only sender filtering, sender snapshot field selections, default receiver sync field selections, pricing behavior, matching preferences, and metafield prompt suppressions stored at organisation scope.",
   );
 
 export type ProductSharingSettings = z.infer<typeof ProductSharingSettingsSchema>;
