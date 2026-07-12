@@ -12,31 +12,31 @@ export const PLANS: BillingPlan[] = [
   {
     id: "LIFETIME-FREE",
     name: "Lifetime Free",
-    limit: 1000,
+    limit: 0,
   },
   {
     id: "FREE",
     name: "Lifetime Free",
-    limit: 100,
+    limit: 0,
   },
   {
     id: "STARTER",
     name: "Starter",
-    limit: 500,
+    limit: 1,
   },
   {
     id: "GROWTH",
     name: "Growth",
-    limit: 1_000,
+    limit: 1,
   },
   {
     id: "PRO",
     name: "Pro",
-    limit: 2_500,
+    limit: 1,
   },
   {
     id: "VIP",
     name: "VIP",
-    limit: 2_500,
+    limit: 1,
   },
 ];
