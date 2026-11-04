@@ -94,6 +94,14 @@ export const OrganisationResult = z.object({
   plan: z.string().optional().nullable().describe("Shopify plan."),
   website: z.string().optional().nullable().describe("Website URL."),
   settingsLastSynced: z.date().nullable().optional(),
+  settingsSyncAttemptedAt: z.date().nullable().optional(),
+  settingsSyncDueAt: z.date().nullable().optional(),
+  settingsSyncLeaseUntil: z.date().nullable().optional(),
+  settingsSyncRetryAfter: z.date().nullable().optional(),
+  settingsSyncState: z
+    .union([z.literal("UNAVAILABLE_SHOP"), z.literal("SHOP_PENDING_TERMINATION")])
+    .nullable()
+    .optional(),
   productSharingStoreKey: z.string().optional().nullable(),
   productSharingProductSnapshotChecksum: z.string().optional().nullable(),
   productSharingProductSnapshotDirtyAt: z.date().nullable().optional(),
