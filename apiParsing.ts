@@ -13,6 +13,18 @@ type ParseJsonOptions<T> = {
   maxBytes?: number;
 };
 
+export type RequestValidationIssue = { path: string; code: string };
+
+export class RequestValidationError extends Error {
+  constructor(
+    message: string,
+    readonly issues: RequestValidationIssue[] = [],
+  ) {
+    super(message);
+    this.name = "RequestValidationError";
+  }
+}
+
 export function normaliseOptionalQueryString(value: string | null | undefined) {
   const trimmed = value?.trim();
 
@@ -38,7 +50,7 @@ export function parseJsonBody<T>(
       return options.emptyValue;
     }
 
-    throw new Error(REQUEST_BODY_ERROR);
+    throw new RequestValidationError(REQUEST_BODY_ERROR, [{ path: "", code: "missing_body" }]);
   }
 
   return parseJsonString(body, schema, options);
@@ -51,7 +63,7 @@ export function parseEventJsonBody<T>(event: APIGatewayProxyEvent, schema: z.Zod
 }
 
 export function throwZodQueryError(error: z.ZodError): never {
-  throw new Error(formatZodError(error, QUERY_ERROR));
+  throw new RequestValidationError(formatZodError(error, QUERY_ERROR), getZodIssues(error));
 }
 
 function parseJsonString<T>(
@@ -66,7 +78,7 @@ function parseJsonString<T>(
   try {
     parsedJson = JSON.parse(body);
   } catch {
-    throw new Error(REQUEST_BODY_ERROR);
+    throw new RequestValidationError(REQUEST_BODY_ERROR, [{ path: "", code: "invalid_json" }]);
   }
 
   const parsed = schema.safeParse(parsedJson);
@@ -76,7 +88,10 @@ function parseJsonString<T>(
       throw new Error(REQUEST_BODY_ERROR);
     }
 
-    throw new Error(formatZodError(parsed.error, REQUEST_BODY_ERROR));
+    throw new RequestValidationError(
+      formatZodError(parsed.error, REQUEST_BODY_ERROR),
+      getZodIssues(parsed.error),
+    );
   }
 
   return parsed.data;
@@ -84,7 +99,7 @@ function parseJsonString<T>(
 
 function decodeEventBody(event: APIGatewayProxyEvent) {
   if (!event.body) {
-    throw new Error(REQUEST_BODY_ERROR);
+    throw new RequestValidationError(REQUEST_BODY_ERROR, [{ path: "", code: "missing_body" }]);
   }
 
   return event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf8") : event.body;
@@ -92,10 +107,17 @@ function decodeEventBody(event: APIGatewayProxyEvent) {
 
 function assertJsonByteLength(body: string, maxBytes: number) {
   if (Buffer.byteLength(body, "utf8") > maxBytes) {
-    throw new Error(REQUEST_BODY_ERROR);
+    throw new RequestValidationError(REQUEST_BODY_ERROR, [{ path: "", code: "body_too_large" }]);
   }
 }
 
 function formatZodError(error: z.ZodError, fallback: string) {
   return error.issues.map((issue) => issue.message).join(", ") || fallback;
+}
+
+function getZodIssues(error: z.ZodError): RequestValidationIssue[] {
+  return error.issues.map((issue) => ({
+    path: issue.path.map(String).join("."),
+    code: issue.code,
+  }));
 }
